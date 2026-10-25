@@ -112,3 +112,9 @@ footer{padding:0 0 22px;text-align:center;color:var(--mute);font-size:11px}
   .tabs{gap:6px}.tab{padding:6px 12px}
   .end{padding:0 18px}
 }
+
+/* ===== 탭 페이지 ===== */
+.hero.mini{min-height:0}
+.hero.mini::before,.hero.mini::after{display:none}
+nav a[aria-current="page"]{color:#554bd0;font-weight:700}
+main,section{min-height:0}
