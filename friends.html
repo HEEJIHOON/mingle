@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>친구 찾기 | Mingle</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="hero mini">
+  <header><div class="w">
+    <a class="logo" href="index.html">Mingle</a>
+    <nav><a href="index.html">홈</a><a href="friends.html" aria-current="page">친구 찾기</a><a href="world.html">도시</a><a href="stay.html">숙소</a><a href="safe.html">안전</a></nav>
+  </div></header>
+</div>
+
+<section><div class="w">
+  <h2>여행 친구를 찾아보세요</h2>
+  <div class="fb" role="search">
+    <input id="q" type="search" placeholder="이름, 도시, 관심사 검색" aria-label="검색">
+    <select id="city" aria-label="도시"><option value="">모든 도시</option></select>
+    <select id="tag" aria-label="관심사"><option value="">모든 관심사</option><option>맛집</option><option>카페</option><option>산책</option><option>전시</option><option>사진</option><option>쇼핑</option><option>등산</option></select>
+    <select id="min" aria-label="최소 별점"><option value="0">모든 별점</option><option value="4">★ 4점 이상</option><option value="4.5">★ 4.5점 이상</option></select>
+    <select id="sort" aria-label="정렬"><option value="rec">추천순</option><option value="rating">평점순</option><option value="reviews">후기 많은 순</option></select>
+  </div>
+  <div class="tools">
+    <label class="meta"><input id="ver" type="checkbox"> 인증 표시 프로필만</label>
+    <button class="pill" data-act="safety">🛡️ 안전 센터</button>
+    <button class="pill" data-act="profile">내 프로필</button>
+    <span id="me">게스트</span>
+  </div>
+  <div class="people" id="grid" aria-live="polite"></div>
+  <p class="note" style="margin-top:20px">※ 프로필, 별점, 인증 표시는 모두 예시 데이터이며 실제 신원 확인이 아니에요. 후기·메시지·차단은 이 브라우저에만 저장되는 데모예요.</p>
+</div></section>
+
+<footer><div class="w">Mingle은 준비 중이에요. 프로필과 도시는 예시예요.</div></footer>
+
+<div id="modal" role="dialog" aria-modal="true"><div id="modalBox"></div></div>
+<script src="friends.js"></script>
+</body>
+</html>
