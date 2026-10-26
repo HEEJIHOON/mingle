@@ -38,6 +38,8 @@ select option{background:#1d1a24;color:var(--ink)}
 input:not([type=checkbox]):focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(196,167,255,.15)}
 
 /* ===== 기본 ===== */
+/* iOS 26 Safari tints the status-bar strip from html/body and from the sticky header's background; keep them solid and identical so the strip matches the page. */
+html{background:var(--bg)}
 body{
   display:flex;flex-direction:column;min-height:100vh;margin:0;
   background:var(--bg);
@@ -52,7 +54,7 @@ h1,h2{text-wrap:balance;font-family:var(--display);font-weight:400}
 
 /* ===== 헤더 ===== */
 .hero{display:contents}
-header{position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top,0px);background:rgba(17,16,21,.94);border-bottom:1px solid var(--line);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+header{position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line)}
 header .w{display:flex;justify-content:space-between;gap:28px;align-items:center;min-height:88px}
 .logo{color:var(--ink);font-family:var(--display);font-size:34px;font-weight:400;letter-spacing:-.055em;text-decoration:none}
 nav{display:flex;justify-content:center;gap:4px}
