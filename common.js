@@ -1,6 +1,6 @@
 const db = window.supabase.createClient(
-  "https://ozyhskcynzagtlifcmzc.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96eWhza2N5bnphZ3RsaWZjbXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4MzAyNDksImV4cCI6MjEwODQwNjI0OX0.dq5B33D9VkJQtLSXDPsqV9WUBVJE1uGO5JfVPam71-Y"
+  "https://knnjrjtdmbgubhoylrob.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtubmpyanRkbWJndWJob3lscm9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MjMxODAsImV4cCI6MjEwODQ5OTE4MH0.LtZDpLgjdpgavF5CeLbUygzPJJ5XrI-JavkQ_EWGZMk"
 );
 
 let ME = null;
