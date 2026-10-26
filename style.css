@@ -208,3 +208,8 @@ footer{padding:32px 0;background:var(--bg3);border-top:1px solid var(--line);tex
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* 로그인/로그아웃 글자 전환 */
+.t-in{display:none}
+.in .t-in{display:inline}
+.in .t-out{display:none}
