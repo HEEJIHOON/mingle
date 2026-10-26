@@ -1060,6 +1060,52 @@ footer {
   font-size: 13px;
 }
 
+/* 안전센터 및 내 프로필 버튼 */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  min-height: 38px;
+  padding: 8px 15px;
+
+  border: 1px solid var(--line-hover);
+  border-radius: 999px;
+
+  background: var(--card2);
+  color: var(--brand-deep);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.2s;
+}
+
+.pill:hover {
+  border-color: var(--brand);
+  background: var(--card-hover);
+  color: #fff;
+}
+
+.pill:active {
+  transform: scale(0.97);
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
 /* =========================================================
    15. 친구 프로필 카드
    ========================================================= */
