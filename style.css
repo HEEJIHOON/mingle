@@ -1420,6 +1420,16 @@ body.modal-open {
   border-bottom: 1px solid var(--line);
 }
 
+.row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.row > .mini {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .rv {
   margin-bottom: 8px;
   padding: 12px;
@@ -1931,4 +1941,4 @@ body.modal-open {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-   }
+}
