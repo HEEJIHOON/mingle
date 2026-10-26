@@ -4,20 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>도시 | Mingle</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Gowun+Dodum&family=Nunito:wght@800&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="hero mini">
   <header><div class="w">
     <a class="logo" href="index.html">Mingle</a>
-    <nav>
-      <a href="index.html">홈</a>
-      <a href="friends.html">친구 찾기</a>
-      <a href="world.html" aria-current="page">도시</a>
-      <a href="stay.html">숙소</a>
-      <a href="safe.html">안전</a>
-    </nav>
+    <nav><a href="index.html">홈</a><a href="login.html" id="auth-link">로그인</a><a href="friends.html">친구 찾기</a><a href="world.html" aria-current="page">도시</a><a href="stay.html">숙소</a><a href="safe.html">안전</a></nav>
   </div></header>
 </div>
 
@@ -32,6 +25,8 @@
 
 <footer><div class="w">Mingle은 준비 중이에요. 프로필과 도시는 예시예요.</div></footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="common.js"></script>
 <script src="data.js"></script>
 <script src="main.js"></script>
 </body>
