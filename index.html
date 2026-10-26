@@ -4,25 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mingle | 여행지에서 만나는 동네 친구</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Gowun+Dodum&family=Nunito:wght@800&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="s" viewBox="0 0 24 24"><path d="M12 0C12.8 7 17 11.2 24 12 17 12.8 12.8 17 12 24 11.2 17 7 12.8 0 12 7 11.2 11.2 7 12 0Z"/></symbol></svg>
-
 <div class="hero" id="top">
-  <svg class="sp tw" style="left:6%;top:120px" width="26" height="26"><use href="#s"/></svg>
-  <svg class="sp tw2" style="left:46%;top:70px" width="16" height="16"><use href="#s"/></svg>
-  <svg class="sp tw" style="right:8%;top:380px" width="22" height="22"><use href="#s"/></svg>
   <header><div class="w">
     <a class="logo" href="index.html">Mingle</a>
-    <nav>
-      <a href="index.html" aria-current="page">홈</a>
-      <a href="friends.html">친구 찾기</a>
-      <a href="world.html">도시</a>
-      <a href="stay.html">숙소</a>
-      <a href="safe.html">안전</a>
-    </nav>
+    <nav><a href="index.html" aria-current="page">홈</a><a href="login.html" id="auth-link">로그인</a><a href="friends.html">친구 찾기</a><a href="world.html">도시</a><a href="stay.html">숙소</a><a href="safe.html">안전</a></nav>
   </div></header>
   <div class="w hg">
     <div>
@@ -32,7 +20,6 @@
       <a class="btn" href="world.html">지금 시작하기　 →</a>
     </div>
   </div>
-  <svg class="wave" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden="true"><path d="M0 28C240 64 480 0 720 28S1200 56 1440 18V56H0Z" style="fill:var(--bg)"/></svg>
 </div>
 
 <section id="why"><div class="w">
@@ -50,5 +37,8 @@
 </div></section>
 
 <footer><div class="w">Mingle은 준비 중이에요. 프로필과 도시는 예시예요.</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="common.js"></script>
 </body>
 </html>
