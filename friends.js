@@ -16,7 +16,8 @@ const get=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null
 const set=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const find=id=>PEOPLE.find(p=>p.id===id);
-const me=()=>get('mingle_me',null);
+const me=()=>ME?ME.name:null;
+const needLogin=()=>{if(confirm('로그인이 필요해요. 로그인 페이지로 갈까요?'))location.href='login.html'};
 const stars=v=>'★'.repeat(Math.round(v))+'☆'.repeat(5-Math.round(v));
 const err=t=>{$('#err').textContent=t};
 let cur=null;
@@ -40,25 +41,37 @@ function render(){
 /* ===== 기능 ===== */
 function trust(id){const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 신뢰 정보</h2><ul class="info"><li><b>${p.v?'인증 표시됨':'인증 전'}</b><span>예시 데이터이며 실제 신원 확인이 아니에요.</span></li><li><b>${r.n?r.avg.toFixed(1)+' / 5 · 평가 '+r.n+'개':'평가 없음'}</b><span>평점은 신원 인증과 별개예요.</span></li><li><b>만나기 전에</b><span>개인정보와 금전 정보는 공유하지 말고, 불편하면 신고·차단하세요.</span></li></ul>`)}
 function fav(id){const f=get('mingle_favs',[]),i=f.indexOf(id);i>=0?f.splice(i,1):f.push(id);set('mingle_favs',f);render()}
-function profile(msg){const m=me();show(`<h2>내 프로필</h2><form id="pf" class="mf"><input id="nick" maxlength="20" required placeholder="닉네임" value="${esc(m||'')}"><p id="err" class="err" role="alert">${esc(msg||'')}</p><button class="mini pri">저장</button>${m?'<button type="button" class="mini" data-act="logout">로그아웃</button>':''}</form><p class="note">데모 프로필이라 비밀번호는 저장하지 않아요. 실제 계정은 Supabase 로그인으로 연결해야 해요.</p>`)}
-function saveProfile(){set('mingle_me',$('#nick').value.trim());showMe();closeModal()}
-function showMe(){$('#me').textContent=me()?`${me()}님`:'게스트'}
+
+function profile(){
+  if(!ME){location.href='login.html';return}
+  show(`<h2>내 프로필</h2><form id="pf" class="mf"><input id="nick" maxlength="20" required placeholder="닉네임" value="${esc(ME.name)}"><input id="pcity" maxlength="50" placeholder="주로 여행하고 싶은 도시" value="${esc(ME.city||'')}"><textarea id="pbio" maxlength="300" placeholder="자기소개">${esc(ME.bio||'')}</textarea><p id="err" class="err" role="alert"></p><button class="mini pri">저장</button><button type="button" class="mini" data-act="logout">로그아웃</button></form><p class="note">${esc(ME.email)} 계정으로 로그인했어요.</p>`)
+}
+async function saveProfile(){
+  const nickname=$('#nick').value.trim(),city=$('#pcity').value.trim(),bio=$('#pbio').value.trim();
+  const {error}=await db.from('profiles').upsert({id:ME.id,nickname,city,bio});
+  if(error)return err('저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
+  ME={...ME,name:nickname,city,bio};showMe();closeModal()
+}
+function showMe(){$('#me').textContent=ME?ME.name+'님':'게스트'}
+
 function chat(id){if(get('mingle_blocked',[]).includes(id))return;cur=id;drawChat()}
 function drawChat(){const p=find(cur),m=get('mingle_msgs',{})[cur]||[{f:'t',t:`안녕하세요! ${p.city} 여행 이야기를 나눠요 😊`}];show(`<h2>${esc(p.name)} · ${esc(p.city)}</h2><div class="ice">${ICE.map((x,i)=>`<button class="mini" data-act="ice" data-i="${i}">${x[0]}</button>`).join('')}<button class="mini" data-act="tips">안전 팁</button></div><div class="msgs" id="msgs">${m.map(x=>`<div class="bub ${x.f==='m'?'me':''}">${esc(x.t)}</div>`).join('')}</div><form id="cf" class="cf"><input id="ci" maxlength="500" placeholder="메시지를 입력하세요" aria-label="메시지"><button class="mini pri">전송</button></form><p class="note">브라우저 안에서만 동작하는 데모 채팅이에요.</p>`);const b=$('#msgs');b.scrollTop=b.scrollHeight}
 function sendMsg(){const t=$('#ci').value.trim();if(!t)return;const all=get('mingle_msgs',{});all[cur]=all[cur]||[{f:'t',t:`안녕하세요! ${find(cur).city} 여행 이야기를 나눠요 😊`}];all[cur].push({f:'m',t});set('mingle_msgs',all);drawChat();$('#ci').focus()}
 function ice(i){const p=find(cur);$('#ci').value=ICE[i][1](p.city);$('#ci').focus()}
 function tips(){alert('안전 팁\n\n• 전화번호, 집 주소, 금융정보는 공유하지 마세요.\n• 송금 요구에 주의하세요.\n• 불편한 대화는 신고하고 차단하세요.\n• 만남은 공공장소에서, 일정은 믿을 수 있는 사람에게 알려 주세요.\n\n데모 기능이며 긴급 구조 서비스가 아니에요.')}
-function reviews(id){cur=id;const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 후기</h2><p><span class="stars">${stars(r.avg)}</span> <b>${r.avg.toFixed(1)}</b> <span class="meta">(${r.n}개 평가)</span></p>${r.rs.length?r.rs.slice().reverse().map(x=>`<div class="rv"><span class="stars">${stars(x.s)}</span> <b>${esc(x.u)}</b><p>${esc(x.t||'별점만 남겼어요.')}</p></div>`).join(''):'<p class="note">아직 사용자 후기가 없어요.</p>'}<form id="rf" class="mf"><select id="rs" required><option value="">별점 선택</option><option value="5">★★★★★ 5점</option><option value="4">★★★★ 4점</option><option value="3">★★★ 3점</option><option value="2">★★ 2점</option><option value="1">★ 1점</option></select><textarea id="rt" maxlength="300" placeholder="후기 (선택)"></textarea><p id="err" class="err" role="alert"></p><button class="mini pri">후기 등록</button></form><p class="note">프로필을 만들고 메시지를 보낸 뒤에 남길 수 있어요.</p>`)}
-function sendReview(){const m=me(),s=+$('#rs').value;if(!m)return profile('후기를 남기려면 먼저 닉네임을 정해 주세요.');if(!(get('mingle_msgs',{})[cur]||[]).some(x=>x.f==='m'))return err('먼저 메시지를 보낸 뒤에 후기를 남길 수 있어요.');if(!s)return err('별점을 선택해 주세요.');const rs=get('mingle_reviews',[]);if(rs.some(x=>x.pid===cur&&x.u===m))return err('이미 후기를 남겼어요.');rs.push({pid:cur,u:m,s,t:$('#rt').value.trim()});set('mingle_reviews',rs);render();reviews(cur)}
-function report(id){if(!me())return profile('신고하려면 먼저 닉네임을 정해 주세요.');cur=id;show(`<h2>${esc(find(id).name)}님 신고</h2><form id="xf" class="mf"><select id="xr" required><option value="">사유 선택</option><option>괴롭힘</option><option>사칭·허위 프로필</option><option>스팸·광고</option><option>안전 우려</option><option>기타</option></select><textarea id="xd" maxlength="500" placeholder="상황을 알려 주세요 (선택)"></textarea><button class="mini pri">신고 접수</button></form><p class="note">데모에서는 이 브라우저에만 저장되고 운영팀에 전달되지 않아요.</p>`)}
+
+function reviews(id){cur=id;const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 후기</h2><p><span class="stars">${stars(r.avg)}</span> <b>${r.avg.toFixed(1)}</b> <span class="meta">(${r.n}개 평가)</span></p>${r.rs.length?r.rs.slice().reverse().map(x=>`<div class="rv"><span class="stars">${stars(x.s)}</span> <b>${esc(x.u)}</b><p>${esc(x.t||'별점만 남겼어요.')}</p></div>`).join(''):'<p class="note">아직 사용자 후기가 없어요.</p>'}<form id="rf" class="mf"><select id="rs" required><option value="">별점 선택</option><option value="5">★★★★★ 5점</option><option value="4">★★★★ 4점</option><option value="3">★★★ 3점</option><option value="2">★★ 2점</option><option value="1">★ 1점</option></select><textarea id="rt" maxlength="300" placeholder="후기 (선택)"></textarea><p id="err" class="err" role="alert"></p><button class="mini pri">후기 등록</button></form><p class="note">로그인하고 메시지를 보낸 뒤에 남길 수 있어요.</p>`)}
+function sendReview(){const m=me(),s=+$('#rs').value;if(!m)return needLogin();if(!(get('mingle_msgs',{})[cur]||[]).some(x=>x.f==='m'))return err('먼저 메시지를 보낸 뒤에 후기를 남길 수 있어요.');if(!s)return err('별점을 선택해 주세요.');const rs=get('mingle_reviews',[]);if(rs.some(x=>x.pid===cur&&x.u===m))return err('이미 후기를 남겼어요.');rs.push({pid:cur,u:m,s,t:$('#rt').value.trim()});set('mingle_reviews',rs);render();reviews(cur)}
+
+function report(id){if(!me())return needLogin();cur=id;show(`<h2>${esc(find(id).name)}님 신고</h2><form id="xf" class="mf"><select id="xr" required><option value="">사유 선택</option><option>괴롭힘</option><option>사칭·허위 프로필</option><option>스팸·광고</option><option>안전 우려</option><option>기타</option></select><textarea id="xd" maxlength="500" placeholder="상황을 알려 주세요 (선택)"></textarea><button class="mini pri">신고 접수</button></form><p class="note">데모에서는 이 브라우저에만 저장되고 운영팀에 전달되지 않아요.</p>`)}
 function sendReport(){const r=get('mingle_reports',[]);r.push({pid:cur,by:me(),reason:$('#xr').value,detail:$('#xd').value.trim(),at:Date.now()});set('mingle_reports',r);closeModal();alert('신고가 이 브라우저에 저장되었어요. (데모)')}
 function block(id){let b=get('mingle_blocked',[]);if(b.includes(id))b=b.filter(x=>x!==id);else{if(!confirm(find(id).name+'님을 차단할까요? 검색에서 숨겨지고 채팅이 막혀요.'))return;b.push(id)}set('mingle_blocked',b);render();safety()}
 function safety(){const b=get('mingle_blocked',[]);show(`<h2>안전 센터</h2><p class="note">차단한 사용자는 검색에서 숨겨지고 채팅도 막혀요.</p>${b.length?b.map(id=>`<div class="row"><b>${esc(find(id).name)}</b><button class="mini" data-act="blk" data-id="${id}">차단 해제</button></div>`).join(''):'<p>차단한 사용자가 없어요.</p>'}<p class="note">차단·신고 내역은 이 브라우저에만 저장돼요.</p>`)}
 
 /* ===== 이벤트 연결 ===== */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),safety,profile:()=>profile(),tips,ice:()=>ice(b.dataset.i),logout:()=>{localStorage.removeItem('mingle_me');showMe();closeModal()}}[b.dataset.act]||(()=>{}))()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),safety,profile:()=>profile(),tips,ice:()=>ice(b.dataset.i),logout:async()=>{await db.auth.signOut();location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
 document.addEventListener('submit',e=>{e.preventDefault();({pf:saveProfile,cf:sendMsg,rf:sendReview,xf:sendReport}[e.target.id]||(()=>{}))()});
 PEOPLE.map(p=>p.city).filter((v,i,a)=>a.indexOf(v)===i).sort().forEach(c=>{const o=document.createElement('option');o.value=o.textContent=c;$('#city').appendChild(o)});
-['q'].forEach(i=>$('#'+i).addEventListener('input',render));
+$('#q').addEventListener('input',render);
 ['city','tag','min','sort','ver'].forEach(i=>$('#'+i).addEventListener('change',render));
-showMe();render();
+render();authReady.then(showMe);
