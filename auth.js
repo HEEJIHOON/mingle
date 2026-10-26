@@ -41,10 +41,17 @@ form.addEventListener("submit", async (e) => {
   statusEl.textContent = "";
 
   if (mode === "signup") {
+    const nickname = nick.value.trim();
+    if (!nickname) {
+      statusEl.textContent = "닉네임을 입력해 주세요. 공백만으로는 만들 수 없어요.";
+      submitBtn.disabled = false;
+      nick.focus();
+      return;
+    }
     const { data, error } = await db.auth.signUp({
       email: email.value.trim(),
       password: pw.value,
-      options: { data: { nickname: nick.value.trim() } },
+      options: { data: { nickname } },
     });
     submitBtn.disabled = false;
     if (error) { statusEl.textContent = friendlyError(error); return; }
@@ -61,6 +68,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-db.auth.getSession().then(({ data: { session } }) => {
+// 세션 판정은 common.js의 authReady를 재사용해요 (프로필 조회를 기다리지 않아요)
+authReady.then((session) => {
   if (session) location.href = "index.html";
 });
