@@ -20,12 +20,13 @@ const find=id=>PEOPLE.find(p=>p.id===id);
 /* ===== 계정별 저장소: 키에 사용자 ID(또는 guest)를 붙여 섞이지 않게 해요 ===== */
 const isIn=()=>!!(ME&&ME.id);
 const key=n=>`mingle_${n}:${isIn()?ME.id:'guest'}`;
-const gk=(n,d)=>get(key(n),d);
+const gk=(n,d)=>authFailed?d:get(key(n),d);
 const sk=(n,v)=>set(key(n),v);
-// 계정 구분 없이 저장되던 예전 공용 키는 주인을 알 수 없어서 읽지 않고 한 번 지워요.
-const clearLegacy=()=>{try{['msgs','reviews','favs','blocked','reports'].forEach(n=>localStorage.removeItem('mingle_'+n))}catch(e){}};
+// 계정 구분 없이 저장되던 예전 공용 키(mingle_msgs 등)는 지우지 않고 그대로 보존해요. 주인을 알 수 없으므로 어느 계정 화면에도 읽어 오지 않아요.
 const SAVE_FAIL='저장하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 시도해 주세요. 입력한 내용은 그대로 두었어요.';
 
+const AUTH_ERR='로그인 상태를 확인하지 못해 저장할 수 없어요. 새로고침한 뒤 다시 시도해 주세요.';
+const authBlocked=()=>{if(authFailed){alert(AUTH_ERR);return true}return false};
 const needLogin=()=>{if(confirm('로그인이 필요해요. 로그인 페이지로 갈까요?'))location.href='login.html'};
 // 인증 초기화를 기다린 뒤에만 계정 기능을 실행해요. 초기화 오류와 비로그인은 구분해요.
 async function needAuth(){await authReady;if(authFailed){alert('로그인 상태를 확인하지 못했어요. 새로고침한 뒤 다시 시도해 주세요.');return false}return true}
@@ -91,7 +92,7 @@ function render(){
 
 /* ===== 기능 ===== */
 function trust(id){const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 신뢰 정보</h2><ul class="info"><li><b>${p.v?'인증 표시됨':'인증 전'}</b><span>예시 데이터이며 실제 신원 확인이 아니에요.</span></li><li><b>${r.n?r.avg.toFixed(1)+' / 5 · 평가 '+r.n+'개':'평가 없음'}</b><span>평점은 신원 인증과 별개예요.</span></li><li><b>만나기 전에</b><span>개인정보와 금전 정보는 공유하지 말고, 불편하면 신고·차단하세요.</span></li></ul>`)}
-function fav(id){const f=gk('favs',[]),i=f.indexOf(id);i>=0?f.splice(i,1):f.push(id);if(!sk('favs',f))return alert('즐겨찾기를 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();const b=document.querySelector(`[data-act="fav"][data-id="${id}"]`);if(b)b.focus()}
+function fav(id){if(authBlocked())return;const f=gk('favs',[]),i=f.indexOf(id);i>=0?f.splice(i,1):f.push(id);if(!sk('favs',f))return alert('즐겨찾기를 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();const b=document.querySelector(`[data-act="fav"][data-id="${id}"]`);if(b)b.focus()}
 
 async function profile(){
   if(!(await needAuth()))return;
@@ -109,9 +110,9 @@ async function saveProfile(){
 }
 function showMe(){$('#me').textContent=authFailed?'로그인 상태 확인 실패':isIn()?ME.name+'님':'게스트'}
 
-function chat(id){if(gk('blocked',[]).includes(id))return;cur=id;drawChat()}
+function chat(id){if(authBlocked())return;if(gk('blocked',[]).includes(id))return;cur=id;drawChat()}
 function drawChat(){const p=find(cur),m=gk('msgs',{})[cur]||[{f:'t',t:`안녕하세요! ${p.city} 여행 이야기를 나눠요 😊`}];show(`<h2>${esc(p.name)} · ${esc(p.city)}</h2><div class="ice">${ICE.map((x,i)=>`<button class="mini" data-act="ice" data-i="${i}">${x[0]}</button>`).join('')}<button class="mini" data-act="tips">안전 팁</button></div><div class="msgs" id="msgs">${m.map(x=>`<div class="bub ${x.f==='m'?'me':''}">${esc(x.t)}</div>`).join('')}</div><form id="cf" class="cf"><input id="ci" maxlength="500" placeholder="메시지를 입력하세요" aria-label="메시지"><button class="mini pri">전송</button></form><p id="err" class="err" role="alert"></p><p class="note">브라우저 안에서만 동작하는 데모 채팅이에요.</p>`);const b=$('#msgs');b.scrollTop=b.scrollHeight}
-function sendMsg(){const t=$('#ci').value.trim();if(!t)return;const all=gk('msgs',{});all[cur]=all[cur]||[{f:'t',t:`안녕하세요! ${find(cur).city} 여행 이야기를 나눠요 😊`}];all[cur].push({f:'m',t});if(!sk('msgs',all))return err(SAVE_FAIL);drawChat();$('#ci').focus()}
+function sendMsg(){const t=$('#ci').value.trim();if(!t)return;if(authFailed)return err(AUTH_ERR);const all=gk('msgs',{});all[cur]=all[cur]||[{f:'t',t:`안녕하세요! ${find(cur).city} 여행 이야기를 나눠요 😊`}];all[cur].push({f:'m',t});if(!sk('msgs',all))return err(SAVE_FAIL);drawChat();$('#ci').focus()}
 function ice(i){const p=find(cur);$('#ci').value=ICE[i][1](p.city);$('#ci').focus()}
 function tips(){alert('안전 팁\n\n• 전화번호, 집 주소, 금융정보는 공유하지 마세요.\n• 송금 요구에 주의하세요.\n• 불편한 대화는 신고하고 차단하세요.\n• 만남은 공공장소에서, 일정은 믿을 수 있는 사람에게 알려 주세요.\n\n데모 기능이며 긴급 구조 서비스가 아니에요.')}
 
@@ -139,8 +140,8 @@ async function sendReport(){
   if(!sk('reports',r))return err(SAVE_FAIL);
   safety('신고 기록이 이 브라우저에 저장되었어요. 운영팀에는 전달되지 않아요. (데모)')
 }
-function delReport(id){if(!sk('reports',gk('reports',[]).filter(x=>x.id!==id)))return alert('삭제하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');safety('신고 기록을 삭제했어요.')}
-function block(id){let b=gk('blocked',[]);if(b.includes(id))b=b.filter(x=>x!==id);else{if(!confirm(find(id).name+'님을 차단할까요? 검색에서 숨겨지고 채팅이 막혀요.'))return;b.push(id)}if(!sk('blocked',b))return alert('차단 설정을 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();safety()}
+function delReport(id){if(authBlocked())return;if(!sk('reports',gk('reports',[]).filter(x=>x.id!==id)))return alert('삭제하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');safety('신고 기록을 삭제했어요.')}
+function block(id){if(authBlocked())return;let b=gk('blocked',[]);if(b.includes(id))b=b.filter(x=>x!==id);else{if(!confirm(find(id).name+'님을 차단할까요? 검색에서 숨겨지고 채팅이 막혀요.'))return;b.push(id)}if(!sk('blocked',b))return alert('차단 설정을 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();safety()}
 async function safety(msg){
   await authReady;
   const b=gk('blocked',[]),rp=gk('reports',[]).slice().reverse(),nm=id=>esc((find(id)||{}).name||id);
@@ -154,5 +155,5 @@ PEOPLE.map(p=>p.city).filter((v,i,a)=>a.indexOf(v)===i).sort().forEach(c=>{const
 $('#q').addEventListener('input',render);
 ['city','tag','min','sort','ver'].forEach(i=>$('#'+i).addEventListener('change',render));
 $('#grid').innerHTML='<div class="empty">불러오는 중…</div>';
-authReady.then(()=>{clearLegacy();ready=true;showMe();render()});
+authReady.then(()=>{ready=true;showMe();render()});
 loadProfile().then(showMe);
