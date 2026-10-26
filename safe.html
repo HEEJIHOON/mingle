@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>안전 | Mingle</title>
-<link rel="stylesheet" href="style.css">
+<!-- Pages caches fixed asset URLs. Give each page load fresh local CSS/JS URLs. -->
+<script>
+var mingleAssetVersion = Date.now().toString(36) + Math.random().toString(36).slice(2);
+var mingleStyles = document.createElement('link');
+mingleStyles.rel = 'stylesheet';
+mingleStyles.href = 'style.css?v=' + mingleAssetVersion;
+document.head.appendChild(mingleStyles);
+</script>
+<noscript><link rel="stylesheet" href="style.css"></noscript>
 <script>try{if(localStorage.getItem('sb-knnjrjtdmbgubhoylrob-auth-token'))document.documentElement.classList.add('in')}catch(e){}</script>
 </head>
 <body>
@@ -28,6 +36,14 @@
 <footer><div class="w">Mingle은 준비 중이에요. 프로필과 도시는 예시예요.</div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
-<script src="common.js"></script>
+<script>
+// Ordered classic scripts preserve dependencies without document.write.
+["common.js"].forEach(function (src) {
+  var script = document.createElement('script');
+  script.async = false;
+  script.src = src + '?v=' + mingleAssetVersion;
+  document.body.appendChild(script);
+});
+</script>
 </body>
 </html>
