@@ -697,16 +697,6 @@ section h2 {
   font-size: 13px;
 }
 
-.city.first {
-  border-color: var(--brand);
-
-  background: linear-gradient(
-    160deg,
-    #493078,
-    var(--card)
-  );
-}
-
 .legend {
   margin: 30px 0 0;
   padding: 22px 24px;
@@ -728,7 +718,7 @@ section h2 {
 
 .stays {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 30px 20px;
 }
 
@@ -896,6 +886,23 @@ section h2 {
   color: #fff;
   font-size: 15px;
   font-weight: 800;
+}
+
+.safe.soon li {
+  color: var(--mute);
+  font-weight: 500;
+}
+
+.safe.soon li::before {
+  content: "예정";
+
+  flex-basis: 48px;
+  width: 48px;
+  border-radius: 17px;
+
+  background: var(--card2);
+  color: #fff;
+  font-size: 12px;
 }
 
 /* =========================================================
@@ -1279,11 +1286,38 @@ footer {
   display: flex;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
+#modalBox:focus {
+  outline: none;
+}
+
+.tab:focus-visible,
+.stab:focus-visible,
+[role="tabpanel"]:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+#safe h3 {
+  margin: 28px 0 14px;
+  color: #fff;
+  font-size: 17px;
+}
+
+#safe h2 + h3 {
+  margin-top: 8px;
+}
+
 #modalBox {
   position: relative;
 
   width: min(100%, 520px);
   max-height: 90vh;
+  max-height: 90dvh;
+  overscroll-behavior: contain;
   overflow: auto;
 
   padding: 26px;
@@ -1384,6 +1418,16 @@ footer {
 
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
+}
+
+.row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.row > .mini {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .rv {
@@ -1897,4 +1941,4 @@ footer {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-   }
+}
