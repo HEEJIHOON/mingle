@@ -1035,29 +1035,37 @@ footer {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 
   margin-bottom: 22px;
-
   color: var(--mute);
 }
 
 .tools label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.tools input[type="checkbox"],
-.tools input[type="radio"] {
-  accent-color: var(--pri2);
+.tools .pill {
+  flex-shrink: 0;
 }
 
 #me {
   margin-left: auto;
-
   color: var(--mute);
   font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .tools {
+    gap: 10px;
+  }
+
+  #me {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
 }
 
 /* 안전센터 및 내 프로필 버튼 */
