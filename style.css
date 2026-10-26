@@ -29,10 +29,9 @@
 
   /* 포인트 컬러 */
   --brand: #c4a7ff;
-  --brand-dark: #9565f5;
   --brand-deep: #e5d8ff;
   --pri: #8051e8;
-  --pri2: #a47aff;
+  --pri-text-bg: #8555e8;
 
   /* 글자 */
   --ink: #ffffff;
@@ -47,7 +46,6 @@
 
   /* 모서리 */
   --radius-sm: 12px;
-  --radius-md: 18px;
   --radius-lg: 24px;
   --radius-xl: 32px;
 
@@ -375,7 +373,7 @@ nav a[aria-current="page"] {
   background: linear-gradient(
     110deg,
     #7542dc 0%,
-    #9464f4 100%
+    #8051e8 100%
   );
 
   color: #fff;
@@ -397,7 +395,7 @@ nav a[aria-current="page"] {
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(112, 65, 220, 0.42);
-  filter: brightness(1.08);
+  filter: brightness(1.04);
 }
 
 .btn:active {
@@ -560,7 +558,7 @@ section h2 {
 
   background: linear-gradient(
     135deg,
-    var(--pri2),
+    var(--pri-text-bg),
     var(--pri)
   );
 
@@ -623,7 +621,7 @@ section h2 {
   background: linear-gradient(
     110deg,
     var(--pri),
-    var(--pri2)
+    var(--pri-text-bg)
   );
 
   color: #fff;
@@ -891,7 +889,7 @@ section h2 {
 
   background: linear-gradient(
     135deg,
-    var(--pri2),
+    var(--pri-text-bg),
     var(--pri)
   );
 
@@ -901,47 +899,8 @@ section h2 {
 }
 
 /* =========================================================
-   13. 마지막 안내 및 푸터
+   13. 푸터
    ========================================================= */
-
-.end {
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: 72px 28px;
-
-  background: var(--bg);
-}
-
-.end .card {
-  padding: 62px 26px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-xl);
-
-  background:
-    radial-gradient(
-      ellipse at 10% 0%,
-      rgba(255, 255, 255, 0.12),
-      transparent 50%
-    ),
-    linear-gradient(
-      120deg,
-      #5733a0,
-      #7546cb 55%,
-      #9868dc
-    );
-
-  box-shadow: var(--shadow-lg);
-  text-align: center;
-}
-
-.end b {
-  color: #fff;
-  font-size: clamp(24px, 4vw, 36px);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1.35;
-}
 
 footer {
   padding: 30px 0;
@@ -1057,17 +1016,6 @@ footer {
   font-size: 13px;
 }
 
-@media (max-width: 640px) {
-  .tools {
-    gap: 10px;
-  }
-
-  #me {
-    flex-basis: 100%;
-    margin-left: 0;
-  }
-}
-
 /* 안전센터 및 내 프로필 버튼 */
 .pill {
   display: inline-flex;
@@ -1107,11 +1055,6 @@ footer {
 
 .pill:active {
   transform: scale(0.97);
-}
-
-.pill:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 3px;
 }
 
 /* =========================================================
@@ -1290,7 +1233,7 @@ footer {
 }
 
 .mini.pri:hover {
-  background: var(--pri2);
+  background: var(--pri-text-bg);
 }
 
 .empty {
@@ -1506,7 +1449,7 @@ footer {
   background: linear-gradient(
     110deg,
     var(--pri),
-    var(--pri2)
+    var(--pri-text-bg)
   );
 }
 
@@ -1851,15 +1794,6 @@ footer {
     font-size: 14px;
   }
 
-  .end {
-    padding: 48px 18px;
-  }
-
-  .end .card {
-    padding: 42px 20px;
-    border-radius: 25px;
-  }
-
   .fb {
     grid-template-columns: minmax(0, 1fr);
     padding: 12px;
@@ -1869,11 +1803,8 @@ footer {
     grid-column: auto;
   }
 
-  .tools {
-    gap: 10px;
-  }
-
   #me {
+    flex-basis: 100%;
     width: 100%;
     margin-left: 0;
   }
@@ -1951,11 +1882,6 @@ footer {
   .steps li {
     padding: 20px;
   }
-
-  .end {
-    padding-right: 14px;
-    padding-left: 14px;
-  }
 }
 
 /* =========================================================
@@ -1971,4 +1897,4 @@ footer {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
+   }
