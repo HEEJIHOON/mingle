@@ -49,7 +49,14 @@ const cityBox = document.getElementById("cities");
 if (regionTabs && cityBox) {
   setupTabs(regionTabs, cityBox, "region", REGIONS.map((r) => r.name), (i) => {
     cityBox.innerHTML = REGIONS[i].cities
-      .map(([city, country]) => `<div class="city"><b>${city}</b><small>${country}</small></div>`)
+      .map(([city, country]) => {
+        const p = typeof PARKS !== "undefined" ? PARKS[country] : null;
+        return `<div class="city${p ? " has-photo" : ""}">${
+          p ? `<div class="cph"><img src="${p.img}" alt="${p.park} 사진" loading="lazy"></div>` : ""
+        }<b>${city}</b><small>${country}</small>${
+          p ? `<small class="cpark">${p.park} · ${p.loc}</small>` : ""
+        }</div>`;
+      })
       .join("");
   });
 }
