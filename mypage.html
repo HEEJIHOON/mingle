@@ -4,28 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>내 정보 | rululala</title>
-<!-- Pages caches fixed asset URLs. Give each page load fresh local CSS/JS URLs. -->
-<script>
-var mingleAssetVersion = Date.now().toString(36) + Math.random().toString(36).slice(2);
-var mingleStyles = document.createElement('link');
-mingleStyles.rel = 'stylesheet';
-mingleStyles.href = 'style.css?v=' + mingleAssetVersion;
-document.head.appendChild(mingleStyles);
-</script>
+<!-- Pages caches fixed asset URLs. loader.js gives each page load fresh local CSS/JS URLs. -->
+<script src="loader.js" data-scripts="common.js,mypage.js"></script>
 <noscript><link rel="stylesheet" href="style.css"></noscript>
-<script>try{if(localStorage.getItem('sb-knnjrjtdmbgubhoylrob-auth-token'))document.documentElement.classList.add('in')}catch(e){}</script>
 </head>
 <body>
-<nav class="rail" aria-label="페이지 이동">
-  <a class="rail-logo" href="index.html" aria-label="rululala 홈">r</a>
-  <a class="ri" href="index.html" aria-label="홈" title="홈"><svg viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/></svg><span class="rl">홈</span></a>
-  <a class="ri" href="friends.html" aria-label="친구 찾기" title="친구 찾기"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.8 19.5c.6-3.2 2.7-5 5.2-5s4.6 1.8 5.2 5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.8 14.7c2.3.3 3.9 1.9 4.4 4.3"/></svg><span class="rl">친구</span></a>
-  <a class="ri" href="world.html" aria-label="도시" title="도시"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c-4.8 5-4.8 12 0 17"/><path d="M12 3.5c4.8 5 4.8 12 0 17"/></svg><span class="rl">도시</span></a>
-  <a class="ri" href="stay.html" aria-label="숙소" title="숙소"><svg viewBox="0 0 24 24"><path d="M4 20v-8.5L12 5l8 6.5V20"/><path d="M9.5 20v-5.5h5V20"/></svg><span class="rl">숙소</span></a>
-  <a class="ri" href="safe.html" aria-label="안전" title="안전"><svg viewBox="0 0 24 24"><path d="M12 3.5 19 6v5.2c0 4.4-2.9 7.6-7 9.3-4.1-1.7-7-4.9-7-9.3V6z"/><path d="m9 11.8 2.2 2.2 3.8-4"/></svg><span class="rl">안전</span></a>
-  <a class="ri rail-auth" href="login.html" id="auth-link" aria-current="page" aria-label="로그인" title="로그인"><span class="t-out avc"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.4"/><path d="M5.5 20c.8-3.6 3.4-5.6 6.5-5.6s5.7 2 6.5 5.6"/></svg></span><span class="t-in avc"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.4"/><path d="M5.5 20c.8-3.6 3.4-5.6 6.5-5.6s5.7 2 6.5 5.6"/></svg></span><span class="rl t-out-rl">로그인</span><span class="rl t-in-rl">내 정보</span></a>
-</nav>
-
 <section><div class="w auth">
   <h2>내 정보</h2>
   <p class="note" id="welcome" role="status" hidden>가입을 환영해요! 도시와 자기소개를 채우면 친구가 나를 알아보기 쉬워요.</p>
@@ -40,19 +23,6 @@ document.head.appendChild(mingleStyles);
   <p class="switch"><button type="button" id="p-logout" class="btn btn-line">로그아웃</button></p>
 </div></section>
 
-<footer><div class="w">
-  <div class="fnote">프로필(닉네임·도시·자기소개)은 가입한 rululala 회원에게만 보여요. 이메일 등 로그인 정보는 공개되지 않아요.</div>
-</div></footer>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
-<script>
-// Ordered classic scripts preserve dependencies without document.write.
-["common.js", "mypage.js"].forEach(function (src) {
-  var script = document.createElement('script');
-  script.async = false;
-  script.src = src + '?v=' + mingleAssetVersion;
-  document.body.appendChild(script);
-});
-</script>
 </body>
 </html>
+
