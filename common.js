@@ -6,6 +6,45 @@ const db = window.supabase.createClient(
 let ME = null;
 let authFailed = false;
 
+// 레일의 사람 버튼은 상태에 따라 내 정보/로그인으로 보내요. 로그아웃은 내 정보 페이지에서만 해요.
+let authState = "pending"; // pending | in | out | error
+
+function paintAuthState(state) {
+  authState = state;
+  document.documentElement.classList.toggle("in", state === "in");
+  const link = document.getElementById("auth-link");
+  if (!link) return;
+  if (state === "in") {
+    link.href = "mypage.html";
+    link.setAttribute("aria-label", "내 정보");
+    link.title = "내 정보";
+  } else if (state === "out") {
+    link.href = "login.html";
+    link.setAttribute("aria-label", "로그인");
+    link.title = "로그인";
+  } else if (state === "error") {
+    link.removeAttribute("href");
+    link.setAttribute("aria-label", "로그인 상태 확인 실패");
+    link.title = "로그인 상태를 확인하지 못했어요. 새로고침해 주세요.";
+  }
+  link.removeAttribute("aria-busy");
+}
+
+// 세션 확인 전 클릭은 확인이 끝난 뒤 올바른 목적지로 보내요. 확인 실패 시에는 아무 곳으로도 보내지 않아요.
+const authLinkEl = document.getElementById("auth-link");
+if (authLinkEl) {
+  authLinkEl.addEventListener("click", (e) => {
+    if (authState === "in" || authState === "out") return; // href가 이미 실제 상태와 일치해요
+    e.preventDefault();
+    if (authState === "error") return;
+    authLinkEl.setAttribute("aria-busy", "true");
+    authReady.then(() => {
+      if (authState === "in") location.href = "mypage.html";
+      else if (authState === "out") location.href = "login.html";
+    });
+  });
+}
+
 // 세션 판정은 여기서 한 번만 해요. 프로필 상세(city/bio)는 필요한 화면이 loadProfile()로 읽어요.
 const authReady = (async () => {
   let session = null;
@@ -14,22 +53,12 @@ const authReady = (async () => {
     session = res.data && res.data.session;
   } catch (e) {
     authFailed = true;
+    paintAuthState("error");
     return null;
   }
 
   // 실제 로그인 상태에 맞게 메뉴를 바로 바로잡아요
-  document.documentElement.classList.toggle("in", !!session);
-
-  const link = document.getElementById("auth-link");
-  if (link && session) {
-    link.href = "#";
-    link.removeAttribute("aria-current");
-    link.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await db.auth.signOut();
-      location.href = "index.html";
-    });
-  }
+  paintAuthState(session ? "in" : "out");
 
   if (session) {
     const u = session.user;
