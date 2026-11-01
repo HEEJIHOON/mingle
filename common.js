@@ -56,3 +56,16 @@ function loadProfile() {
   }
   return profilePromise;
 }
+
+// 프로필 저장은 어느 화면에서나 이 함수를 써요. 행은 가입 트리거가 만들고, RLS상 본인 행만 갱신할 수 있어요.
+async function saveProfile(fields) {
+  await authReady;
+  if (!ME) return { error: new Error("not-signed-in") };
+  const nickname = (fields.nickname || "").trim();
+  const city = (fields.city || "").trim();
+  const bio = (fields.bio || "").trim();
+  if (!nickname) return { error: new Error("nickname-required") };
+  const { error } = await db.from("profiles").update({ nickname, city, bio }).eq("id", ME.id);
+  if (!error) ME = { ...ME, name: nickname, city, bio };
+  return { error };
+}

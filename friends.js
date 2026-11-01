@@ -3,11 +3,7 @@ const PEOPLE=[
 {id:'p2',name:'민준',city:'서울',country:'대한민국',emoji:'📷',age:27,bio:'맛있는 걸 먹고 사진 남기는 게 취미예요.',tags:['맛집','사진','전시'],r:4.8,n:24,v:1},
 {id:'p3',name:'Emma',city:'파리',country:'프랑스',emoji:'🥐',age:26,bio:'베이커리와 미술관을 좋아해요. 편하게 이야기해요!',tags:['카페','전시','산책'],r:4.7,n:31,v:1},
 {id:'p4',name:'루카',city:'로마',country:'이탈리아',emoji:'🍝',age:28,bio:'현지 음식과 숨은 명소를 찾아다니는 여행자예요.',tags:['맛집','산책'],r:4.6,n:19,v:1},
-{id:'p5',name:'소피',city:'방콕',country:'태국',emoji:'🌴',age:24,bio:'시장 구경, 야시장, 수다 떠는 걸 좋아해요.',tags:['맛집','쇼핑','사진'],r:4.9,n:42,v:1},
-{id:'p6',name:'Noah',city:'뉴욕',country:'미국',emoji:'🎧',age:29,bio:'도시 산책과 음악, 전시를 즐겨요.',tags:['전시','산책','카페'],r:4.5,n:16,v:1},
-{id:'p7',name:'유나',city:'오사카',country:'일본',emoji:'🍡',age:23,bio:'디저트 맛집을 찾아다녀요. 코스를 같이 짜봐요!',tags:['맛집','카페','쇼핑'],r:4.8,n:27,v:1},
-{id:'p8',name:'Alex',city:'시드니',country:'호주',emoji:'🏄',age:27,bio:'해변, 가벼운 하이킹, 사진을 좋아해요.',tags:['산책','사진','등산'],r:4.6,n:21,v:1},
-{id:'p9',name:'지우',city:'타이베이',country:'대만',emoji:'🧋',age:25,bio:'야시장 먹거리와 감성 카페 투어를 좋아해요.',tags:['맛집','카페','사진'],r:4.2,n:8,v:0}
+{id:'p5',name:'소피',city:'방콕',country:'태국',emoji:'🌴',age:24,bio:'시장 구경, 야시장, 수다 떠는 걸 좋아해요.',tags:['맛집','쇼핑','사진'],r:4.9,n:42,v:1}
 ];
 const ICE=[['맛집 추천',c=>`${c}에서 현지인이 자주 가는 맛집을 추천해 주실 수 있나요?`],['숨은 명소',c=>`${c}에서 관광객이 잘 모르는 명소가 있을까요?`],['문화·언어',()=>'현지 문화와 언어를 조금 배우고 싶어요. 어떤 표현부터 익히면 좋을까요?'],['일정 소개',c=>`안녕하세요! ${c} 여행을 계획 중이에요. 꼭 해 볼 만한 경험이 있을까요?`]];
 
@@ -33,6 +29,17 @@ async function needAuth(){await authReady;if(authFailed){alert('로그인 상태
 const stars=v=>'★'.repeat(Math.round(v))+'☆'.repeat(5-Math.round(v));
 const err=t=>{const e=$('#err');if(e)e.textContent=t};
 let cur=null,ready=false;
+
+/* ===== 실제 가입자: 로그인 확인 후에만 가져와요. 로그아웃 상태에서는 요청 자체를 보내지 않아요 ===== */
+let MEMBERS=null;
+async function loadMembers(){
+  await authReady;
+  if(!isIn()){MEMBERS=null;return}
+  try{
+    const {data,error}=await db.from('profiles').select('id, nickname, city, bio').order('created_at',{ascending:false}).limit(50);
+    MEMBERS=error?[]:(data||[]).filter(r=>r.id!==ME.id);
+  }catch(e){MEMBERS=[]}
+}
 
 /* 후기는 render마다 한 번만 읽고 pid별로 묶어 재사용해요 */
 function agg(){const m={};for(const x of gk('reviews',[])){(m[x.pid]=m[x.pid]||[]).push(x)}return m}
@@ -81,8 +88,21 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ===== 목록 ===== */
+function renderMembers(){
+  const box=$('#members');if(!box)return;
+  if(!isIn()){
+    box.innerHTML='<div class="empty">실제 가입자 프로필은 로그인한 회원에게만 보여요.<br><a href="login.html">로그인</a>하고 만나 보세요.</div>';
+    return;
+  }
+  if(MEMBERS===null){box.innerHTML='<div class="empty">불러오는 중…</div>';return}
+  const q=$('#q').value.toLowerCase().trim();
+  const list=MEMBERS.filter(m=>!q||[m.nickname,m.city,m.bio].join(' ').toLowerCase().includes(q));
+  box.innerHTML=list.length?list.map(m=>`<article class="pc"><div class="pc-top"><div class="av">🙂</div><div><h3>${esc(m.nickname||'이름 없음')}</h3><div class="meta">${esc(m.city||'도시 미입력')}</div></div></div><span class="badge ok">가입자</span><p>${esc(m.bio||'아직 자기소개가 없어요.')}</p></article>`).join(''):'<div class="empty">아직 다른 가입자가 없어요.<br>친구에게 Mingle을 알려 주세요!</div>';
+}
+
 function render(){
   if(!ready)return;
+  renderMembers();
   const q=$('#q').value.toLowerCase().trim(),city=$('#city').value,tag=$('#tag').value,min=+$('#min').value,ver=$('#ver').checked,sort=$('#sort').value,fav=gk('favs',[]),bl=gk('blocked',[]);
   const ix=agg(),R=new Map(PEOPLE.map(p=>[p.id,rate(p,ix)]));
   const list=PEOPLE.filter(p=>!bl.includes(p.id)&&(!q||[p.name,p.city,p.country,p.bio].concat(p.tags).join(' ').toLowerCase().includes(q))&&(!city||p.city===city)&&(!tag||p.tags.includes(tag))&&(!min||R.get(p.id).avg>=min)&&(!ver||p.v));
@@ -94,20 +114,6 @@ function render(){
 function trust(id){const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 신뢰 정보</h2><ul class="info"><li><b>${p.v?'인증 표시됨':'인증 전'}</b><span>예시 데이터이며 실제 신원 확인이 아니에요.</span></li><li><b>${r.n?r.avg.toFixed(1)+' / 5 · 평가 '+r.n+'개':'평가 없음'}</b><span>평점은 신원 인증과 별개예요.</span></li><li><b>만나기 전에</b><span>개인정보와 금전 정보는 공유하지 말고, 불편하면 신고·차단하세요.</span></li></ul>`)}
 function fav(id){if(authBlocked())return;const f=gk('favs',[]),i=f.indexOf(id);i>=0?f.splice(i,1):f.push(id);if(!sk('favs',f))return alert('즐겨찾기를 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();const b=document.querySelector(`[data-act="fav"][data-id="${id}"]`);if(b)b.focus()}
 
-async function profile(){
-  if(!(await needAuth()))return;
-  await loadProfile();
-  if(!isIn()){location.href='login.html';return}
-  show(`<h2>내 프로필</h2><form id="pf" class="mf"><input id="nick" maxlength="20" required placeholder="닉네임" value="${esc(ME.name)}"><input id="pcity" maxlength="50" placeholder="주로 여행하고 싶은 도시" value="${esc(ME.city||'')}"><textarea id="pbio" maxlength="300" placeholder="자기소개">${esc(ME.bio||'')}</textarea><p id="err" class="err" role="alert"></p><button class="mini pri">저장</button><button type="button" class="mini" data-act="logout">로그아웃</button></form><p class="note">${esc(ME.email)} 계정으로 로그인했어요.</p>`)
-}
-async function saveProfile(){
-  const nickname=$('#nick').value.trim(),city=$('#pcity').value.trim(),bio=$('#pbio').value.trim();
-  if(!nickname)return err('닉네임을 입력해 주세요. 공백만으로는 저장할 수 없어요.');
-  if(!isIn())return err('로그인이 필요해요.');
-  const {error}=await db.from('profiles').upsert({id:ME.id,nickname,city,bio});
-  if(error)return err('저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
-  ME={...ME,name:nickname,city,bio};showMe();closeModal()
-}
 function showMe(){$('#me').textContent=authFailed?'로그인 상태 확인 실패':isIn()?ME.name+'님':'게스트'}
 
 function chat(id){if(authBlocked())return;if(gk('blocked',[]).includes(id))return;cur=id;drawChat()}
@@ -149,7 +155,7 @@ async function safety(msg){
 }
 
 /* ===== 이벤트 연결 ===== */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),delrep:()=>delReport(id),safety,profile:()=>profile(),tips,ice:()=>ice(b.dataset.i),logout:async()=>{await db.auth.signOut();location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),delrep:()=>delReport(id),safety,tips,ice:()=>ice(b.dataset.i),logout:async()=>{await db.auth.signOut();location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
 document.addEventListener('submit',e=>{e.preventDefault();({pf:saveProfile,cf:sendMsg,rf:sendReview,xf:sendReport}[e.target.id]||(()=>{}))()});
 PEOPLE.map(p=>p.city).filter((v,i,a)=>a.indexOf(v)===i).sort().forEach(c=>{const o=document.createElement('option');o.value=o.textContent=c;$('#city').appendChild(o)});
 // 홈 검색에서 넘어온 ?q= 검색어를 첫 화면에 반영해요.
@@ -159,3 +165,5 @@ $('#q').addEventListener('input',render);
 $('#grid').innerHTML='<div class="empty">불러오는 중…</div>';
 authReady.then(()=>{ready=true;showMe();render()});
 loadProfile().then(showMe);
+// 로그인 상태일 때만 실제 가입자를 가져와요. 비로그인이면 loadMembers가 아무 요청도 보내지 않아요.
+loadMembers().then(()=>{if(ready)renderMembers()});
