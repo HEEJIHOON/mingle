@@ -152,6 +152,8 @@ async function safety(msg){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),delrep:()=>delReport(id),safety,profile:()=>profile(),tips,ice:()=>ice(b.dataset.i),logout:async()=>{await db.auth.signOut();location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
 document.addEventListener('submit',e=>{e.preventDefault();({pf:saveProfile,cf:sendMsg,rf:sendReview,xf:sendReport}[e.target.id]||(()=>{}))()});
 PEOPLE.map(p=>p.city).filter((v,i,a)=>a.indexOf(v)===i).sort().forEach(c=>{const o=document.createElement('option');o.value=o.textContent=c;$('#city').appendChild(o)});
+// 홈 검색에서 넘어온 ?q= 검색어를 첫 화면에 반영해요.
+try{const q0=new URLSearchParams(location.search).get('q');if(q0)$('#q').value=q0}catch(e){}
 $('#q').addEventListener('input',render);
 ['city','tag','min','sort','ver'].forEach(i=>$('#'+i).addEventListener('change',render));
 $('#grid').innerHTML='<div class="empty">불러오는 중…</div>';
