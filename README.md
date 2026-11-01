@@ -1,4 +1,4 @@
-# mingle
+# rululala
 make friends across the world
 
-https://heejihoon.github.io/mingle/
+https://heejihoon.github.io/rululala/
