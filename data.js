@@ -17,3 +17,31 @@ const STAYS = [
   { country: "미국", items: [["뉴욕 미드타운 호텔","관광지 이동이 편해요",["인기","교통"]],["뉴욕 롱아일랜드시티 호텔","맨해튼이 지하철로 가까워요",["가성비"]],["뉴욕 윌리엄스버그 숙소","동네 산책이 즐거워요",["감성"]]] },
   { country: "호주", items: [["시드니 서큘러키 호텔","항구와 오페라하우스가 가까워요",["인기"]],["시드니 본다이 호스텔","바다 근처 여행자 숙소예요",["가성비","휴양"]],["시드니 서리힐스 게스트하우스","카페가 많은 동네예요",["감성"]]] }
 ];
+
+
+// 나라별 대표 테마파크 실제 사진 (Wikimedia Commons 자유 라이선스). 저작자·라이선스 전체 목록: credits.html, ATTRIBUTION.md
+// 카드의 도시와 공원의 실제 위치가 다를 수 있어서 공원 이름과 위치를 함께 보여줘요.
+const PARKS = {
+  "일본": { img: "assets/parks/japan.jpg", park: "도쿄 디즈니랜드", loc: "일본 지바 우라야스" },
+  "태국": { img: "assets/parks/thailand.jpg", park: "시암 파크 시티", loc: "태국 방콕" },
+  "베트남": { img: "assets/parks/vietnam.jpg", park: "빈원더스 나트랑 케이블카", loc: "베트남 나트랑" },
+  "대만": { img: "assets/parks/taiwan.jpg", park: "리오푸 빌리지", loc: "대만 신주" },
+  "싱가포르": { img: "assets/parks/singapore.jpg", park: "유니버설 스튜디오 싱가포르", loc: "싱가포르 센토사" },
+  "인도네시아": { img: "assets/parks/indonesia.jpg", park: "두니아 판타시 (안쫄)", loc: "인도네시아 자카르타" },
+  "프랑스": { img: "assets/parks/france.jpg", park: "디즈니랜드 파리", loc: "프랑스 마른라발레" },
+  "영국": { img: "assets/parks/uk.jpg", park: "알턴 타워스", loc: "영국 스태퍼드셔" },
+  "스페인": { img: "assets/parks/spain.jpg", park: "포르트아벤투라", loc: "스페인 살루" },
+  "이탈리아": { img: "assets/parks/italy.jpg", park: "가르다랜드", loc: "이탈리아 가르다호" },
+  "독일": { img: "assets/parks/germany.jpg", park: "유로파 파크", loc: "독일 루스트" },
+  "체코": { img: "assets/parks/czechia.jpg", park: "아쿠아팰리스 프라하", loc: "체코 체스틀리체" },
+  "포르투갈": { img: "assets/parks/portugal.jpg", park: "주마린 알가르베", loc: "포르투갈 알부페이라" },
+  "미국": { img: "assets/parks/usa.jpg", park: "매직 킹덤 (월트 디즈니 월드)", loc: "미국 플로리다 올랜도" },
+  "캐나다": { img: "assets/parks/canada.jpg", park: "캐나다 원더랜드", loc: "캐나다 온타리오 본" },
+  "멕시코": { img: "assets/parks/mexico.jpg", park: "엑스카렛", loc: "멕시코 리비에라 마야" },
+  "아르헨티나": { img: "assets/parks/argentina.jpg", park: "파르케 데 라 코스타", loc: "아르헨티나 티그레" },
+  "호주": { img: "assets/parks/australia.jpg", park: "드림월드", loc: "호주 골드코스트" },
+  "뉴질랜드": { img: "assets/parks/newzealand.jpg", park: "레인보우스 엔드", loc: "뉴질랜드 오클랜드" },
+  "아랍에미리트": { img: "assets/parks/uae.jpg", park: "페라리 월드 아부다비", loc: "아랍에미리트 야스 섬" },
+  "튀르키예": { img: "assets/parks/turkey.jpg", park: "이스판불", loc: "튀르키예 이스탄불" },
+  "남아프리카공화국": { img: "assets/parks/southafrica.jpg", park: "골드 리프 시티", loc: "남아프리카공화국 요하네스버그" },
+};

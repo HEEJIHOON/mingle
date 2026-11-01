@@ -11,10 +11,14 @@
   --surface:#ffffff;
   --surface-hover:#fafbfc;
   --field:#ffffff;
-  --brand:#5433eb;
-  --brand-soft:#eeebfd;
-  --pri:#5433eb;
-  --grad:#5433eb;
+  --main-color:#7c6ff2; /* 메인 보라 (로고와 같은 색): 여기만 바꾸면 사이트의 보라가 모두 함께 바뀌어요 */
+  --main-color-rgb:124,111,242; /* --main-color의 RGB 숫자 (rgba()에서 사용) */
+  --main-color-strong:#6959e6; /* 메인 보라의 진한 변형 (버튼 hover) */
+  --main-color-soft:#efedfe; /* 메인 보라의 연한 변형 (배경 강조) */
+  --brand:var(--main-color);
+  --brand-soft:var(--main-color-soft);
+  --pri:var(--main-color);
+  --grad:var(--main-color);
   --grad-soft:#f2f4f5;
   --ink:#000000;
   --mute:#787574;
@@ -23,7 +27,7 @@
   --shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);
   --shadow-sm:0 2px 8px rgba(0,0,0,.06);
   --shadow-lg:0 4px 24px rgba(0,0,0,.12);
-  --shadow-violet:0 4px 24px rgba(69,36,219,.34);
+  --shadow-violet:0 4px 24px rgba(var(--main-color-rgb),.34);
   --r:20px;
   --r-lg:28px;
   --w:1200px;
@@ -38,7 +42,7 @@
 button,input,select,textarea{font:inherit}
 ::placeholder{color:#787574}
 select option{background:#fff;color:var(--ink)}
-input:not([type=checkbox]):focus,select:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(84,51,235,.15)}
+input:not([type=checkbox]):focus,select:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(var(--main-color-rgb),.15)}
 
 /* ===== 기본 ===== */
 /* iOS 26 Safari tints the status-bar strip from html/body; both keep the same solid canvas color so the strip matches the page top. */
@@ -86,7 +90,8 @@ h1,h2{text-wrap:balance;font-weight:600}
 .fc3{z-index:3;transform:rotate(-2deg) translateY(-16px)}
 .fc4{z-index:4;transform:rotate(5deg) translateY(8px)}
 .fc-img{padding:8px 8px 12px}
-.fph{display:grid;place-items:center;aspect-ratio:1/1;border-radius:20px;font-size:40px}
+.fph{display:grid;place-items:center;aspect-ratio:1/1;overflow:hidden;border-radius:20px;font-size:40px}
+.fph img{display:block;width:100%;height:100%;object-fit:cover}
 .fmeta{padding:9px 6px 2px;text-align:left}
 .fmeta b{display:block;font-size:14px;font-weight:600;letter-spacing:-.02em;line-height:1.35}
 .fmeta span{display:block;margin-top:1px;color:var(--mute);font-size:9px;letter-spacing:-.01em}
@@ -101,13 +106,13 @@ h1,h2{text-wrap:balance;font-weight:600}
 
 /* 검색 pill + 바이올렛 원형 전송 버튼 */
 .hsearch{display:flex;align-items:center;gap:6px;max-width:560px;margin:30px auto 0;padding:4px 4px 4px 22px;border:1px solid rgba(0,0,0,.1);border-radius:9999px;background:var(--surface);box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s}
-.hsearch:focus-within{border-color:var(--pri);box-shadow:0 0 0 3px rgba(84,51,235,.15)}
+.hsearch:focus-within{border-color:var(--pri);box-shadow:0 0 0 3px rgba(var(--main-color-rgb),.15)}
 .hsearch input{flex:1;min-width:0;padding:10px 0;border:0;background:none;color:var(--ink);font-size:16px;letter-spacing:-.031em;appearance:none;-webkit-appearance:none}
 .hsearch input:focus{outline:none;box-shadow:none;border:0}
-.hsearch button{display:grid;place-items:center;flex:none;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:var(--pri);color:#fff;cursor:pointer;box-shadow:var(--shadow-violet);transition:background .2s,transform .2s}
-.hsearch button:hover{background:#4529d4}
+.hsearch button{display:grid;place-items:center;flex:none;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:var(--pri);color:var(--ink);cursor:pointer;box-shadow:var(--shadow-violet);transition:background .2s,transform .2s}
+.hsearch button:hover{background:var(--main-color-strong)}
 .hsearch button:active{transform:scale(.94)}
-.hsearch button svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hsearch button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* 카테고리 pill */
 .cpills{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:22px}
@@ -127,7 +132,9 @@ a.band-head:hover h2{text-decoration:underline;text-underline-offset:4px}
 .tiles4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
 .tile{position:relative;display:block;aspect-ratio:4/5;overflow:hidden;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--shadow);text-decoration:none;transition:transform .2s,box-shadow .2s}
 .tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-.tile .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:56px}
+.tile .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:56px;overflow:hidden}
+.tile .ph img{display:block;width:100%;height:100%;object-fit:cover}
+.tile .lab small{display:block;margin-top:2px;color:var(--mute);font-size:11px;font-weight:500;letter-spacing:-.01em}
 .tile .lab{position:absolute;left:12px;bottom:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.92);color:var(--ink);font-size:14px;font-weight:600;letter-spacing:-.02em;box-shadow:var(--shadow-sm)}
 
 /* 추천 친구 미리보기 카드 */
@@ -171,8 +178,12 @@ section>h2,.w>h2{margin-bottom:28px;font-size:32px;font-weight:700;line-height:1
 .cities{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;min-height:64px}
 .city{padding:20px}
 .city::before{content:"";display:block;width:28px;height:28px;margin-bottom:24px;border:0;border-radius:50%;background:var(--grad-soft)}
+.city.has-photo::before{display:none}
+.city .cph{aspect-ratio:4/3;margin-bottom:14px;overflow:hidden;border-radius:14px;background:var(--grad-soft)}
+.city .cph img{display:block;width:100%;height:100%;object-fit:cover}
 .city b{display:block;font-size:17px;font-weight:600}
 .city small{display:block;margin-top:3px;color:var(--mute);font-size:13px}
+.city small.cpark{margin-top:8px;font-size:12px;line-height:1.5}
 .legend{margin:30px 0 0;padding:22px 26px;border:0;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--shadow-sm);color:var(--ink);font-size:15px;font-weight:500;line-height:1.7}
 
 /* ===== 숙소 ===== */
@@ -260,12 +271,12 @@ body.modal-open{overflow:hidden}
 .ice{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .msgs{display:flex;flex-direction:column;gap:8px;height:240px;margin-bottom:10px;padding:12px;overflow:auto;border:0;border-radius:var(--r);background:var(--grad-soft)}
 .bub{max-width:82%;padding:9px 14px;border:0;border-radius:18px;background:var(--surface);box-shadow:var(--shadow-sm);color:var(--ink);font-size:14px;line-height:1.6;overflow-wrap:anywhere}
-.bub.me{align-self:flex-end;background:var(--pri);color:#fff;box-shadow:none}
+.bub.me{align-self:flex-end;background:var(--pri);color:var(--ink);box-shadow:none}
 .cf{display:flex;gap:8px}
 
 /* ===== 로그인/버튼 ===== */
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:14px 30px;border:1px solid transparent;border-radius:9999px;background:var(--pri);color:#fff;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;box-shadow:var(--shadow-violet);transition:background .2s,transform .2s,box-shadow .2s}
-.btn:hover{background:#4529d4;transform:translateY(-2px);box-shadow:0 8px 30px rgba(69,36,219,.4)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:14px 30px;border:1px solid transparent;border-radius:9999px;background:var(--pri);color:var(--ink);font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;box-shadow:var(--shadow-violet);transition:background .2s,transform .2s,box-shadow .2s}
+.btn:hover{background:var(--main-color-strong);transform:translateY(-2px);box-shadow:0 8px 30px rgba(var(--main-color-rgb),.4)}
 .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .btn-line{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
 .btn-line:hover{background:var(--grad-soft);color:var(--ink);transform:none;box-shadow:none}
@@ -277,7 +288,7 @@ body.modal-open{overflow:hidden}
 #auth-status{min-height:1.4em;margin:12px 0 0;color:var(--mute);font-size:14px;line-height:1.6;text-align:center}
 .switch{margin:20px 0 0;color:var(--mute);font-size:14px;text-align:center}
 .link{padding:0;border:0;background:none;color:var(--pri);font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.link:hover{color:#4529d4}
+.link:hover{color:var(--main-color-strong)}
 
 /* ===== 태블릿 ===== */
 @media (max-width:900px){
@@ -363,3 +374,10 @@ body.modal-open{overflow:hidden}
 #p-status{min-height:1.4em;margin:12px 0 0;color:var(--mute);font-size:14px;line-height:1.6;text-align:center}
 #p-status.err{color:#d4261c}
 #p-status.ok{color:#0a7a3d}
+
+/* ===== 사진 크레딧 ===== */
+.credits{margin:24px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.credits li{padding:16px 18px;border:0;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow-sm);font-size:13px;line-height:1.6;color:var(--mute)}
+.credits b{display:block;color:var(--ink);font-size:14px}
+.credits a{color:var(--pri)}
+@media (max-width:720px){.credits{grid-template-columns:1fr}}
