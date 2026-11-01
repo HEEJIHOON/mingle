@@ -4,7 +4,7 @@
 
 **작은 로고** — 검정 둥근 정사각형에 `RLLL.` (RL 흰색, LL과 점 보라)
 
-<img src="assets/icon-on-white.png" width="128">
+<img src="assets/icon.png" width="128">
 
 **큰 로고** — `rululala.` (rulu 검정, lala와 점 보라)
 
