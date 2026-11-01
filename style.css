@@ -354,3 +354,19 @@ body.modal-open{overflow:hidden}
 .steps-more{margin:20px 0 0;color:var(--mute);font-size:14px}
 .steps-more a{color:var(--pri);font-weight:500;text-decoration:none}
 .steps-more a:hover{text-decoration:underline}
+
+/* 로그인한 사용자에게만 보이는 내 정보 탭 */
+.ri-mypage{display:none}
+.in .ri-mypage{display:grid}
+
+/* 내 정보 페이지 폼: 로그인 폼과 같은 디자인 */
+#profile-form{display:grid;gap:16px}
+#profile-form .field{display:grid;gap:8px}
+#profile-form label{font-size:13px;font-weight:600;color:var(--ink)}
+#profile-form input,#profile-form textarea{width:100%;min-width:0;padding:14px 20px;border:1px solid var(--line);border-radius:9999px;background:var(--field);color:var(--ink);font-size:15px;transition:border-color .2s,box-shadow .2s}
+#profile-form textarea{border-radius:var(--r);min-height:110px;resize:vertical;line-height:1.6}
+#profile-form input:disabled,#profile-form textarea:disabled{opacity:.55}
+#profile-form .btn{width:100%;margin-top:4px;padding:15px}
+#p-status{min-height:1.4em;margin:12px 0 0;color:var(--mute);font-size:14px;line-height:1.6;text-align:center}
+#p-status.err{color:#d4261c}
+#p-status.ok{color:#0a7a3d}
