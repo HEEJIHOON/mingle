@@ -59,13 +59,17 @@ h1,h2{text-wrap:balance;font-weight:600}
 .rail{position:fixed;top:0;bottom:0;left:0;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;width:var(--rail);padding:14px 10px;background:var(--surface)}
 .rail-logo{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin-bottom:12px;color:var(--ink);font-size:24px;font-weight:700;letter-spacing:-.05em;text-decoration:none}
 .rail-logo::after{content:".";color:var(--pri)}
-.ri{display:grid;place-items:center;width:48px;height:48px;border-radius:20px;color:var(--ink);text-decoration:none;transition:background .2s,transform .2s}
+.ri{display:grid;place-items:center;width:52px;min-height:52px;height:auto;padding:6px 2px;gap:3px;border-radius:16px;color:var(--ink);text-decoration:none;transition:background .2s,transform .2s}
 .ri svg{display:block;width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .ri:hover{background:var(--grad-soft)}
 .ri:active{transform:scale(.94)}
 .ri[aria-current="page"]{background:var(--grad-soft)}
-.rl{display:none}
-.rail-auth{margin-top:auto;width:48px;height:48px}
+.rl{display:block;color:var(--mute);font-size:10px;font-weight:500;letter-spacing:-.01em;line-height:1.2}
+.ri[aria-current="page"] .rl{color:var(--ink)}
+.rail-auth{margin-top:auto;width:52px;min-height:52px;height:auto;padding:6px 2px;gap:3px}
+.rail-auth .t-in-rl{display:none}
+.in .rail-auth .t-in-rl{display:block}
+.in .rail-auth .t-out-rl{display:none}
 .rail-auth .avc{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--line);border-radius:50%}
 .rail-auth .avc svg{width:20px;height:20px}
 .t-in,.in .t-out{display:none}
@@ -268,6 +272,8 @@ body.modal-open{overflow:hidden}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:14px 30px;border:1px solid transparent;border-radius:9999px;background:var(--pri);color:#fff;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;box-shadow:var(--shadow-violet);transition:background .2s,transform .2s,box-shadow .2s}
 .btn:hover{background:#4529d4;transform:translateY(-2px);box-shadow:0 8px 30px rgba(69,36,219,.4)}
 .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn-line:hover{background:var(--grad-soft);color:var(--ink);transform:none;box-shadow:none}
 .auth{max-width:480px;margin:0 auto}
 .auth h2{margin-bottom:32px}
 #auth-form{display:grid;gap:14px}
@@ -355,9 +361,6 @@ body.modal-open{overflow:hidden}
 .steps-more a{color:var(--pri);font-weight:500;text-decoration:none}
 .steps-more a:hover{text-decoration:underline}
 
-/* 로그인한 사용자에게만 보이는 내 정보 탭 */
-.ri-mypage{display:none}
-.in .ri-mypage{display:grid}
 
 /* 내 정보 페이지 폼: 로그인 폼과 같은 디자인 */
 #profile-form{display:grid;gap:16px}

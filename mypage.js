@@ -48,7 +48,14 @@ function setStatus(text, kind) {
   });
 
   $('#p-logout').addEventListener('click', async () => {
-    await db.auth.signOut();
-    location.href = 'index.html';
+    const btn = $('#p-logout');
+    btn.disabled = true;
+    try {
+      await db.auth.signOut();
+      location.href = 'index.html';
+    } catch (e) {
+      btn.disabled = false;
+      setStatus('로그아웃에 실패했어요. 잠시 후 다시 시도해 주세요.', 'err');
+    }
   });
 })();
