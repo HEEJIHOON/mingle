@@ -9,6 +9,38 @@ let authFailed = false;
 // 레일의 사람 버튼은 상태에 따라 내 정보/로그인으로 보내요. 로그아웃은 내 정보 페이지에서만 해요.
 let authState = "pending"; // pending | in | out | error
 
+// 7개 페이지가 공유하는 내비게이션과 푸터는 여기서 넣어요. 메뉴·푸터를 고칠 때 이 파일만 고치면 돼요.
+const currentPage = location.pathname.split("/").pop() || "index.html";
+const railHTML = `<nav class="rail" aria-label="페이지 이동">
+  <a class="rail-logo" href="index.html" aria-label="rululala 홈">r</a>
+  <a class="ri" href="index.html" aria-label="홈" title="홈"><svg viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/></svg><span class="rl">홈</span></a>
+  <a class="ri" href="friends.html" aria-label="친구 찾기" title="친구 찾기"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.8 19.5c.6-3.2 2.7-5 5.2-5s4.6 1.8 5.2 5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.8 14.7c2.3.3 3.9 1.9 4.4 4.3"/></svg><span class="rl">친구</span></a>
+  <a class="ri" href="world.html" aria-label="도시" title="도시"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c-4.8 5-4.8 12 0 17"/><path d="M12 3.5c4.8 5 4.8 12 0 17"/></svg><span class="rl">도시</span></a>
+  <a class="ri" href="stay.html" aria-label="숙소" title="숙소"><svg viewBox="0 0 24 24"><path d="M4 20v-8.5L12 5l8 6.5V20"/><path d="M9.5 20v-5.5h5V20"/></svg><span class="rl">숙소</span></a>
+  <a class="ri" href="safe.html" aria-label="안전" title="안전"><svg viewBox="0 0 24 24"><path d="M12 3.5 19 6v5.2c0 4.4-2.9 7.6-7 9.3-4.1-1.7-7-4.9-7-9.3V6z"/><path d="m9 11.8 2.2 2.2 3.8-4"/></svg><span class="rl">안전</span></a>
+  <a class="ri rail-auth" href="login.html" id="auth-link" aria-label="로그인" title="로그인"><span class="t-out avc"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.4"/><path d="M5.5 20c.8-3.6 3.4-5.6 6.5-5.6s5.7 2 6.5 5.6"/></svg></span><span class="t-in avc"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.4"/><path d="M5.5 20c.8-3.6 3.4-5.6 6.5-5.6s5.7 2 6.5 5.6"/></svg></span><span class="rl t-out-rl">로그인</span><span class="rl t-in-rl">내 정보</span></a>
+</nav>`;
+const footHTML = `<footer><div class="w">
+  <div class="fcols">
+    <div class="fcol"><div class="flogo">rululala<i>.</i></div><p>여행지에서 만나는 동네 친구.<br>rululala은 준비 중이에요.</p></div>
+    <div class="fcol"><b>메뉴</b><a href="index.html">홈</a><a href="friends.html">친구 찾기</a><a href="world.html">도시</a><a href="stay.html">숙소</a><a href="safe.html">안전</a></div>
+    <div class="fcol"><b>안내</b><a href="safe.html">안전 수칙</a><a href="login.html" id="foot-auth">로그인</a><a href="mypage.html">내 정보</a></div>
+  </div>
+  <div class="fnote">rululala은 준비 중이에요. 프로필·도시·숙소와 별점·인증 표시는 예시예요. 후기·메시지·차단·신고는 이 브라우저에만 저장되는 데모예요.</div>
+</div></footer>`;
+const footMypageHTML = `<footer><div class="w">
+  <div class="fnote">프로필(닉네임·도시·자기소개)은 가입한 rululala 회원에게만 보여요. 이메일 등 로그인 정보는 공개되지 않아요.</div>
+</div></footer>`;
+document.body.insertAdjacentHTML("afterbegin", railHTML);
+document.body.insertAdjacentHTML("beforeend", currentPage === "mypage.html" ? footMypageHTML : footHTML);
+// 현재 페이지의 메뉴만 강조해요. 로그인/내 정보 버튼은 내 정보 페이지에서 강조해요.
+Array.prototype.forEach.call(document.querySelectorAll(".rail a.ri"), function (a) {
+  if (a.id === "auth-link") {
+    if (currentPage === "mypage.html") a.setAttribute("aria-current", "page");
+  } else if (a.getAttribute("href") === currentPage) a.setAttribute("aria-current", "page");
+});
+
+
 
 // 푸터의 로그인 링크도 상태에 따라 로그인/로그아웃으로 바꿔요. 내 정보 링크는 항상 mypage.html이에요.
 function paintFootAuth(state) {
@@ -151,6 +183,3 @@ async function saveProfile(fields) {
   if (!error) ME = { ...ME, name: nickname, city, bio };
   return { error };
 }
-
-
-// 배포 재시도를 위한 커밋이에요. 기능 변화는 없어요.
