@@ -12,9 +12,8 @@
   --surface-hover:#fafbfc;
   --field:#ffffff;
   --main-color:#7c6ff2; /* 메인 보라 (로고와 같은 색): 여기만 바꾸면 사이트의 보라가 모두 함께 바뀌어요 */
-  --main-color-rgb:124,111,242; /* --main-color의 RGB 숫자 (rgba()에서 사용) */
-  --main-color-strong:#6959e6; /* 메인 보라의 진한 변형 (버튼 hover) */
-  --main-color-soft:#efedfe; /* 메인 보라의 연한 변형 (배경 강조) */
+  --main-color-strong:color-mix(in srgb, var(--main-color) 85%, #000); /* 메인 보라에서 파생 (버튼 hover) */
+  --main-color-soft:color-mix(in srgb, var(--main-color) 10%, #fff); /* 메인 보라에서 파생 (배경 강조) */
   --brand:var(--main-color);
   --brand-soft:var(--main-color-soft);
   --pri:var(--main-color);
@@ -27,7 +26,7 @@
   --shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);
   --shadow-sm:0 2px 8px rgba(0,0,0,.06);
   --shadow-lg:0 4px 24px rgba(0,0,0,.12);
-  --shadow-violet:0 4px 24px rgba(var(--main-color-rgb),.34);
+  --shadow-violet:0 4px 24px color-mix(in srgb, var(--main-color) 34%, transparent);
   --r:20px;
   --r-lg:28px;
   --w:1200px;
@@ -42,7 +41,7 @@
 button,input,select,textarea{font:inherit}
 ::placeholder{color:#787574}
 select option{background:#fff;color:var(--ink)}
-input:not([type=checkbox]):focus,select:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(var(--main-color-rgb),.15)}
+input:not([type=checkbox]):focus,select:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb, var(--main-color) 15%, transparent)}
 
 /* ===== 기본 ===== */
 /* iOS 26 Safari tints the status-bar strip from html/body; both keep the same solid canvas color so the strip matches the page top. */
@@ -106,7 +105,7 @@ h1,h2{text-wrap:balance;font-weight:600}
 
 /* 검색 pill + 바이올렛 원형 전송 버튼 */
 .hsearch{display:flex;align-items:center;gap:6px;max-width:560px;margin:30px auto 0;padding:4px 4px 4px 22px;border:1px solid rgba(0,0,0,.1);border-radius:9999px;background:var(--surface);box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s}
-.hsearch:focus-within{border-color:var(--pri);box-shadow:0 0 0 3px rgba(var(--main-color-rgb),.15)}
+.hsearch:focus-within{border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb, var(--main-color) 15%, transparent)}
 .hsearch input{flex:1;min-width:0;padding:10px 0;border:0;background:none;color:var(--ink);font-size:16px;letter-spacing:-.031em;appearance:none;-webkit-appearance:none}
 .hsearch input:focus{outline:none;box-shadow:none;border:0}
 .hsearch button{display:grid;place-items:center;flex:none;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:var(--pri);color:var(--ink);cursor:pointer;box-shadow:var(--shadow-violet);transition:background .2s,transform .2s}
@@ -276,7 +275,7 @@ body.modal-open{overflow:hidden}
 
 /* ===== 로그인/버튼 ===== */
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:14px 30px;border:1px solid transparent;border-radius:9999px;background:var(--pri);color:var(--ink);font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;box-shadow:var(--shadow-violet);transition:background .2s,transform .2s,box-shadow .2s}
-.btn:hover{background:var(--main-color-strong);transform:translateY(-2px);box-shadow:0 8px 30px rgba(var(--main-color-rgb),.4)}
+.btn:hover{background:var(--main-color-strong);transform:translateY(-2px);box-shadow:0 8px 30px color-mix(in srgb, var(--main-color) 40%, transparent)}
 .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .btn-line{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
 .btn-line:hover{background:var(--grad-soft);color:var(--ink);transform:none;box-shadow:none}
