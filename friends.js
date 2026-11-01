@@ -97,7 +97,7 @@ function renderMembers(){
   if(MEMBERS===null){box.innerHTML='<div class="empty">불러오는 중…</div>';return}
   const q=$('#q').value.toLowerCase().trim();
   const list=MEMBERS.filter(m=>!q||[m.nickname,m.city,m.bio].join(' ').toLowerCase().includes(q));
-  box.innerHTML=list.length?list.map(m=>`<article class="pc"><div class="pc-top"><div class="av">🙂</div><div><h3>${esc(m.nickname||'이름 없음')}</h3><div class="meta">${esc(m.city||'도시 미입력')}</div></div></div><span class="badge ok">가입자</span><p>${esc(m.bio||'아직 자기소개가 없어요.')}</p></article>`).join(''):'<div class="empty">아직 다른 가입자가 없어요.<br>친구에게 Mingle을 알려 주세요!</div>';
+  box.innerHTML=list.length?list.map(m=>`<article class="pc"><div class="pc-top"><div class="av">🙂</div><div><h3>${esc(m.nickname||'이름 없음')}</h3><div class="meta">${esc(m.city||'도시 미입력')}</div></div></div><span class="badge ok">가입자</span><p>${esc(m.bio||'아직 자기소개가 없어요.')}</p></article>`).join(''):'<div class="empty">아직 다른 가입자가 없어요.<br>친구에게 rululala을 알려 주세요!</div>';
 }
 
 function render(){
