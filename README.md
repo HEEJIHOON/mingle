@@ -1,7 +1,6 @@
 # rululala
 
 <p>
-  <img src="assets/icon-on-white.png" alt="rululala icon" width="72">
   <img src="assets/wordmark-on-white.png" alt="rululala" height="40">
 </p>
 
