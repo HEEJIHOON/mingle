@@ -343,3 +343,14 @@ body.modal-open{overflow:hidden}
 }
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+
+
+/* ===== 이용 방법 상세 (링크 카드) ===== */
+.steps li{transition:transform .2s,box-shadow .2s}
+.steps li:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.steps li a{color:inherit;text-decoration:none}
+.steps li h3{margin:0 0 8px;font-size:16px;font-weight:600;letter-spacing:-.02em}
+.steps li p{margin:0;color:var(--mute);font-size:14px;font-weight:400;line-height:1.7}
+.steps-more{margin:20px 0 0;color:var(--mute);font-size:14px}
+.steps-more a{color:var(--pri);font-weight:500;text-decoration:none}
+.steps-more a:hover{text-decoration:underline}
