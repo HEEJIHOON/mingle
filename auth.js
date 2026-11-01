@@ -56,7 +56,8 @@ form.addEventListener("submit", async (e) => {
     submitBtn.disabled = false;
     if (error) { statusEl.textContent = friendlyError(error); return; }
     if (!data.session) { statusEl.textContent = "가입 완료! 이메일로 보낸 인증 링크를 눌러주세요."; return; }
-    location.href = "index.html";
+    // 프로필 행은 DB 트리거가 만들어요. 가입 직후엔 내 페이지에서 이어서 프로필을 채워요.
+    location.href = "mypage.html?welcome=1";
   } else {
     const { error } = await db.auth.signInWithPassword({
       email: email.value.trim(),
