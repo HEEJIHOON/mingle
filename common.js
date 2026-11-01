@@ -9,8 +9,32 @@ let authFailed = false;
 // 레일의 사람 버튼은 상태에 따라 내 정보/로그인으로 보내요. 로그아웃은 내 정보 페이지에서만 해요.
 let authState = "pending"; // pending | in | out | error
 
+
+// 푸터의 로그인 링크도 상태에 따라 로그인/로그아웃으로 바꿔요. 내 정보 링크는 항상 mypage.html이에요.
+function paintFootAuth(state) {
+  const link = document.getElementById("foot-auth");
+  if (!link) return;
+  if (state === "in") {
+    link.textContent = "로그아웃";
+    link.href = "#";
+    link.setAttribute("aria-label", "로그아웃");
+    link.title = "로그아웃";
+  } else if (state === "out") {
+    link.textContent = "로그인";
+    link.href = "login.html";
+    link.setAttribute("aria-label", "로그인");
+    link.title = "로그인";
+  } else if (state === "error") {
+    link.removeAttribute("href");
+    link.setAttribute("aria-label", "로그인 상태 확인 실패");
+    link.title = "로그인 상태를 확인하지 못했어요. 새로고침해 주세요.";
+  }
+  link.removeAttribute("aria-busy");
+}
+
 function paintAuthState(state) {
   authState = state;
+  paintFootAuth(state);
   document.documentElement.classList.toggle("in", state === "in");
   const link = document.getElementById("auth-link");
   if (!link) return;
@@ -42,6 +66,35 @@ if (authLinkEl) {
       if (authState === "in") location.href = "mypage.html";
       else if (authState === "out") location.href = "login.html";
     });
+  });
+}
+
+
+// 푸터 로그아웃: 세션 확인 전 클릭은 확인이 끝난 뒤 상태에 맞는 화면으로 보내요. 로그아웃 실패 시 자리에서 다시 시도할 수 있어요.
+const footAuthEl = document.getElementById("foot-auth");
+if (footAuthEl) {
+  footAuthEl.addEventListener("click", async (e) => {
+    if (authState === "out") return; // href가 이미 login.html이에요
+    e.preventDefault();
+    if (authState === "error") return;
+    if (authState === "pending") {
+      footAuthEl.setAttribute("aria-busy", "true");
+      authReady.then(() => {
+        if (authState === "in") location.href = "mypage.html";
+        else if (authState === "out") location.href = "login.html";
+      });
+      return;
+    }
+    // 로그인 상태: 푸터에서 바로 로그아웃해요
+    footAuthEl.textContent = "로그아웃 중…";
+    footAuthEl.setAttribute("aria-busy", "true");
+    try {
+      await db.auth.signOut();
+      location.href = "index.html";
+    } catch (err) {
+      footAuthEl.removeAttribute("aria-busy");
+      footAuthEl.textContent = "로그아웃 실패 · 다시 눌러 주세요";
+    }
   });
 }
 
