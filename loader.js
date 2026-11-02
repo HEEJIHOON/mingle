@@ -1,9 +1,9 @@
 // 7개 페이지가 함께 쓰는 로더예요. Pages가 고정 주소의 파일을 캐시하므로 매 접속마다 새 버전 매개변수를 붙여요.
-var mingleAssetVersion = Date.now().toString(36) + Math.random().toString(36).slice(2);
-var mingleStyles = document.createElement('link');
-mingleStyles.rel = 'stylesheet';
-mingleStyles.href = 'style.css?v=' + mingleAssetVersion;
-document.head.appendChild(mingleStyles);
+var rululalaAssetVersion = Date.now().toString(36) + Math.random().toString(36).slice(2);
+var rululalaStyles = document.createElement('link');
+rululalaStyles.rel = 'stylesheet';
+rululalaStyles.href = 'style.css?v=' + rululalaAssetVersion;
+document.head.appendChild(rululalaStyles);
 
 // 로그인한 화면은 첫 그리기부터 메뉴가 맞도록 html에 in 클래스를 미리 붙여요.
 try{if(localStorage.getItem('sb-knnjrjtdmbgubhoylrob-auth-token'))document.documentElement.classList.add('in')}catch(e){}
@@ -18,7 +18,7 @@ try{if(localStorage.getItem('sb-knnjrjtdmbgubhoylrob-auth-token'))document.docum
     list.forEach(function (src) {
       var script = document.createElement('script');
       script.async = false;
-      script.src = src.indexOf('http') === 0 ? src : src + '?v=' + mingleAssetVersion;
+      script.src = src.indexOf('http') === 0 ? src : src + '?v=' + rululalaAssetVersion;
       document.body.appendChild(script);
     });
   }
