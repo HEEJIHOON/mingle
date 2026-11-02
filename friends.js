@@ -15,10 +15,10 @@ const find=id=>PEOPLE.find(p=>p.id===id);
 
 /* ===== 계정별 저장소: 키에 사용자 ID(또는 guest)를 붙여 섞이지 않게 해요 ===== */
 const isIn=()=>!!(ME&&ME.id);
-const key=n=>`mingle_${n}:${isIn()?ME.id:'guest'}`;
+const key=n=>`rululala_${n}:${isIn()?ME.id:'guest'}`;
 const gk=(n,d)=>authFailed?d:get(key(n),d);
 const sk=(n,v)=>set(key(n),v);
-// 계정 구분 없이 저장되던 예전 공용 키(mingle_msgs 등)는 지우지 않고 그대로 보존해요. 주인을 알 수 없으므로 어느 계정 화면에도 읽어 오지 않아요.
+// 계정 구분 없이 저장되던 예전 공용 키는 지우지 않고 그대로 보존해요. 주인을 알 수 없으므로 어느 계정 화면에도 읽어 오지 않아요.
 const SAVE_FAIL='저장하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 시도해 주세요. 입력한 내용은 그대로 두었어요.';
 
 const AUTH_ERR='로그인 상태를 확인하지 못해 저장할 수 없어요. 새로고침한 뒤 다시 시도해 주세요.';
