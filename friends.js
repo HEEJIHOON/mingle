@@ -16,7 +16,14 @@ const find=id=>PEOPLE.find(p=>p.id===id);
 /* ===== 계정별 저장소: 키에 사용자 ID(또는 guest)를 붙여 섞이지 않게 해요 ===== */
 const isIn=()=>!!(ME&&ME.id);
 const key=n=>`rululala_${n}:${isIn()?ME.id:'guest'}`;
-const gk=(n,d)=>authFailed?d:get(key(n),d);
+// 저장소 값은 형식을 확인하고 잘못된 항목만 걸러서 읽어요. 잘못된 값도 저장소에서 지우지는 않아요.
+const isArr=Array.isArray,isStr=v=>typeof v==='string';
+const idList=v=>isArr(v)?v.filter(isStr):[];
+const msgMap=v=>{const o={};if(v&&!isArr(v)&&typeof v==='object')for(const k of Object.keys(v)){const m=v[k];if(isArr(m))o[k]=m.filter(x=>x&&typeof x==='object'&&(x.f==='m'||x.f==='t')&&isStr(x.t))}return o};
+const reviewList=v=>isArr(v)?v.filter(x=>x&&typeof x==='object'&&isStr(x.pid)&&Number.isInteger(x.s)&&x.s>=1&&x.s<=5&&(x.u==null||isStr(x.u))&&(x.t==null||isStr(x.t))&&(x.a==null||isStr(x.a))):[];
+const reportList=v=>isArr(v)?v.filter(x=>x&&typeof x==='object'&&isStr(x.id)&&isStr(x.pid)&&isStr(x.reason)&&(x.detail==null||isStr(x.detail))):[];
+const READ={favs:idList,blocked:idList,msgs:msgMap,reviews:reviewList,reports:reportList};
+const gk=(n,d)=>{if(authFailed)return d;const v=get(key(n),d);return READ[n]?READ[n](v):v};
 const sk=(n,v)=>set(key(n),v);
 // 계정 구분 없이 저장되던 예전 공용 키는 지우지 않고 그대로 보존해요. 주인을 알 수 없으므로 어느 계정 화면에도 읽어 오지 않아요.
 const SAVE_FAIL='저장하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 시도해 주세요. 입력한 내용은 그대로 두었어요.';
@@ -31,15 +38,17 @@ const err=t=>{const e=$('#err');if(e)e.textContent=t};
 let cur=null,ready=false;
 
 /* ===== 실제 가입자: 로그인 확인 후에만 가져와요. 로그아웃 상태에서는 요청 자체를 보내지 않아요 ===== */
-let MEMBERS=null;
+let MEMBERS=null,membersFailed=false;
 async function loadMembers(){
   await authReady;
-  if(!isIn()){MEMBERS=null;return}
+  if(!isIn()){MEMBERS=null;membersFailed=false;return}
   try{
     const {data,error}=await db.from('profiles').select('id, nickname, city, bio').order('created_at',{ascending:false}).limit(50);
-    MEMBERS=error?[]:(data||[]).filter(r=>r.id!==ME.id);
-  }catch(e){MEMBERS=[]}
+    if(error){MEMBERS=null;membersFailed=true}
+    else{MEMBERS=(data||[]).filter(r=>r.id!==ME.id);membersFailed=false}
+  }catch(e){MEMBERS=null;membersFailed=true}
 }
+async function retryMembers(){membersFailed=false;MEMBERS=null;renderMembers();await loadMembers();if(ready)renderMembers()}
 
 /* 후기는 render마다 한 번만 읽고 pid별로 묶어 재사용해요 */
 function agg(){const m={};for(const x of gk('reviews',[])){(m[x.pid]=m[x.pid]||[]).push(x)}return m}
@@ -94,10 +103,11 @@ function renderMembers(){
     box.innerHTML='<div class="empty">실제 가입자 프로필은 로그인한 회원에게만 보여요.<br><a href="login.html">로그인</a>하고 만나 보세요.</div>';
     return;
   }
+  if(membersFailed){box.innerHTML='<div class="empty">가입자 목록을 불러오지 못했어요.<br><button class="mini" data-act="remembers">다시 시도</button></div>';return}
   if(MEMBERS===null){box.innerHTML='<div class="empty">불러오는 중…</div>';return}
   const q=$('#q').value.toLowerCase().trim();
   const list=MEMBERS.filter(m=>!q||[m.nickname,m.city,m.bio].join(' ').toLowerCase().includes(q));
-  box.innerHTML=list.length?list.map(m=>`<article class="pc"><div class="pc-top"><div class="av">🙂</div><div><h3>${esc(m.nickname||'이름 없음')}</h3><div class="meta">${esc(m.city||'도시 미입력')}</div></div></div><span class="badge ok">가입자</span><p>${esc(m.bio||'아직 자기소개가 없어요.')}</p></article>`).join(''):'<div class="empty">아직 다른 가입자가 없어요.<br>친구에게 rululala을 알려 주세요!</div>';
+  box.innerHTML=list.length?list.map(m=>`<article class="pc"><div class="pc-top"><div class="av">🙂</div><div><h3>${esc(m.nickname||'이름 없음')}</h3><div class="meta">${esc(m.city||'도시 미입력')}</div></div></div><span class="badge ok">가입자</span><p>${esc(m.bio||'아직 자기소개가 없어요.')}</p></article>`).join(''):q?'<div class="empty">검색어에 맞는 가입자가 없어요.</div>':'<div class="empty">아직 다른 가입자가 없어요.<br>친구에게 rululala을 알려 주세요!</div>';
 }
 
 function render(){
@@ -112,23 +122,24 @@ function render(){
 
 /* ===== 기능 ===== */
 function trust(id){const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 신뢰 정보</h2><ul class="info"><li><b>${p.v?'인증 표시됨':'인증 전'}</b><span>예시 데이터이며 실제 신원 확인이 아니에요.</span></li><li><b>${r.n?r.avg.toFixed(1)+' / 5 · 평가 '+r.n+'개':'평가 없음'}</b><span>평점은 신원 인증과 별개예요.</span></li><li><b>만나기 전에</b><span>개인정보와 금전 정보는 공유하지 말고, 불편하면 신고·차단하세요.</span></li></ul>`)}
-function fav(id){if(authBlocked())return;const f=gk('favs',[]),i=f.indexOf(id);i>=0?f.splice(i,1):f.push(id);if(!sk('favs',f))return alert('즐겨찾기를 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();const b=document.querySelector(`[data-act="fav"][data-id="${id}"]`);if(b)b.focus()}
+function fav(id){if(authBlocked())return;if(!find(id))return;const f=gk('favs',[]),i=f.indexOf(id);i>=0?f.splice(i,1):f.push(id);if(!sk('favs',f))return alert('즐겨찾기를 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();const b=document.querySelector(`[data-act="fav"][data-id="${id}"]`);if(b)b.focus()}
 
 function showMe(){$('#me').textContent=authFailed?'로그인 상태 확인 실패':isIn()?ME.name+'님':'게스트'}
 
-function chat(id){if(authBlocked())return;if(gk('blocked',[]).includes(id))return;cur=id;drawChat()}
+function chat(id){if(authBlocked())return;if(!find(id))return;if(gk('blocked',[]).includes(id))return;cur=id;drawChat()}
 function drawChat(){const p=find(cur),m=gk('msgs',{})[cur]||[{f:'t',t:`안녕하세요! ${p.city} 여행 이야기를 나눠요 😊`}];show(`<h2>${esc(p.name)} · ${esc(p.city)}</h2><div class="ice">${ICE.map((x,i)=>`<button class="mini" data-act="ice" data-i="${i}">${x[0]}</button>`).join('')}<button class="mini" data-act="tips">안전 팁</button></div><div class="msgs" id="msgs">${m.map(x=>`<div class="bub ${x.f==='m'?'me':''}">${esc(x.t)}</div>`).join('')}</div><form id="cf" class="cf"><input id="ci" maxlength="500" placeholder="메시지를 입력하세요" aria-label="메시지"><button class="mini pri">전송</button></form><p id="err" class="err" role="alert"></p><p class="note">브라우저 안에서만 동작하는 데모 채팅이에요.</p>`);const b=$('#msgs');b.scrollTop=b.scrollHeight}
-function sendMsg(){const t=$('#ci').value.trim();if(!t)return;if(authFailed)return err(AUTH_ERR);const all=gk('msgs',{});all[cur]=all[cur]||[{f:'t',t:`안녕하세요! ${find(cur).city} 여행 이야기를 나눠요 😊`}];all[cur].push({f:'m',t});if(!sk('msgs',all))return err(SAVE_FAIL);drawChat();$('#ci').focus()}
+function sendMsg(){const t=$('#ci').value.trim();if(!t||t.length>500)return;if(authFailed)return err(AUTH_ERR);const all=gk('msgs',{});all[cur]=all[cur]||[{f:'t',t:`안녕하세요! ${find(cur).city} 여행 이야기를 나눠요 😊`}];all[cur].push({f:'m',t});if(!sk('msgs',all))return err(SAVE_FAIL);drawChat();$('#ci').focus()}
 function ice(i){const p=find(cur);$('#ci').value=ICE[i][1](p.city);$('#ci').focus()}
 function tips(){alert('안전 팁\n\n• 전화번호, 집 주소, 금융정보는 공유하지 마세요.\n• 송금 요구에 주의하세요.\n• 불편한 대화는 신고하고 차단하세요.\n• 만남은 공공장소에서, 일정은 믿을 수 있는 사람에게 알려 주세요.\n\n데모 기능이며 긴급 구조 서비스가 아니에요.')}
 
-function reviews(id){cur=id;const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 후기</h2><p><span class="stars">${stars(r.avg)}</span> <b>${r.avg.toFixed(1)}</b> <span class="meta">(${r.n}개 평가)</span></p>${r.rs.length?r.rs.slice().reverse().map(x=>`<div class="rv"><span class="stars">${stars(x.s)}</span> <b>${esc(x.u)}</b><p>${esc(x.t||'별점만 남겼어요.')}</p></div>`).join(''):'<p class="note">아직 사용자 후기가 없어요.</p>'}<form id="rf" class="mf"><select id="rs" required><option value="">별점 선택</option><option value="5">★★★★★ 5점</option><option value="4">★★★★ 4점</option><option value="3">★★★ 3점</option><option value="2">★★ 2점</option><option value="1">★ 1점</option></select><textarea id="rt" maxlength="300" placeholder="후기 (선택)"></textarea><p id="err" class="err" role="alert"></p><button class="mini pri">후기 등록</button></form><p class="note">로그인하고 메시지를 보낸 뒤에 남길 수 있어요.</p>`)}
+function reviews(id){if(!find(id))return;cur=id;const p=find(id),r=rate(p);show(`<h2>${esc(p.name)}님의 후기</h2><p><span class="stars">${stars(r.avg)}</span> <b>${r.avg.toFixed(1)}</b> <span class="meta">(${r.n}개 평가)</span></p>${r.rs.length?r.rs.slice().reverse().map(x=>`<div class="rv"><span class="stars">${stars(x.s)}</span> <b>${esc(x.u)}</b><p>${esc(x.t||'별점만 남겼어요.')}</p></div>`).join(''):'<p class="note">아직 사용자 후기가 없어요.</p>'}<form id="rf" class="mf"><select id="rs" required><option value="">별점 선택</option><option value="5">★★★★★ 5점</option><option value="4">★★★★ 4점</option><option value="3">★★★ 3점</option><option value="2">★★ 2점</option><option value="1">★ 1점</option></select><textarea id="rt" maxlength="300" placeholder="후기 (선택)"></textarea><p id="err" class="err" role="alert"></p><button class="mini pri">후기 등록</button></form><p class="note">로그인하고 메시지를 보낸 뒤에 남길 수 있어요.</p>`)}
 async function sendReview(){
   const s=+$('#rs').value,t=$('#rt').value.trim(),pid=cur;
   if(!(await needAuth()))return;
   if(!isIn())return needLogin();
   if(!(gk('msgs',{})[pid]||[]).some(x=>x.f==='m'))return err('먼저 메시지를 보낸 뒤에 후기를 남길 수 있어요.');
-  if(!s)return err('별점을 선택해 주세요.');
+  if(!Number.isInteger(s)||s<1||s>5)return err('별점을 선택해 주세요.');
+  if(t.length>300)return err('후기는 300자까지 쓸 수 있어요.');
   const rs=gk('reviews',[]);
   if(rs.some(x=>x.pid===pid&&x.a===ME.id))return err('이미 후기를 남겼어요.');
   rs.push({pid,a:ME.id,u:ME.name,s,t});
@@ -136,18 +147,20 @@ async function sendReview(){
   render();reviews(pid)
 }
 
-async function report(id){if(!(await needAuth()))return;if(!isIn())return needLogin();cur=id;show(`<h2>${esc(find(id).name)}님 신고</h2><form id="xf" class="mf"><select id="xr" required><option value="">사유 선택</option><option>괴롭힘</option><option>사칭·허위 프로필</option><option>스팸·광고</option><option>안전 우려</option><option>기타</option></select><textarea id="xd" maxlength="500" placeholder="상황을 알려 주세요 (선택)"></textarea><p id="err" class="err" role="alert"></p><button class="mini pri">신고 기록 저장</button></form><p class="note">데모에서는 이 브라우저에만 저장되고 운영팀에 전달되지 않아요. 저장한 기록은 안전 센터에서 확인하고 지울 수 있어요.</p>`)}
+async function report(id){if(!(await needAuth()))return;if(!isIn())return needLogin();if(!find(id))return;cur=id;show(`<h2>${esc(find(id).name)}님 신고</h2><form id="xf" class="mf"><select id="xr" required><option value="">사유 선택</option><option>괴롭힘</option><option>사칭·허위 프로필</option><option>스팸·광고</option><option>안전 우려</option><option>기타</option></select><textarea id="xd" maxlength="500" placeholder="상황을 알려 주세요 (선택)"></textarea><p id="err" class="err" role="alert"></p><button class="mini pri">신고 기록 저장</button></form><p class="note">데모에서는 이 브라우저에만 저장되고 운영팀에 전달되지 않아요. 저장한 기록은 안전 센터에서 확인하고 지울 수 있어요.</p>`)}
 async function sendReport(){
   const reason=$('#xr').value,detail=$('#xd').value.trim(),pid=cur;
   if(!(await needAuth()))return;
   if(!isIn())return needLogin();
+  if(!reason)return err('사유를 선택해 주세요.');
+  if(detail.length>500)return err('상세 내용은 500자까지 쓸 수 있어요.');
   const r=gk('reports',[]);
   r.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid,by:ME.id,byName:ME.name,reason,detail,at:Date.now()});
   if(!sk('reports',r))return err(SAVE_FAIL);
   safety('신고 기록이 이 브라우저에 저장되었어요. 운영팀에는 전달되지 않아요. (데모)')
 }
 function delReport(id){if(authBlocked())return;if(!sk('reports',gk('reports',[]).filter(x=>x.id!==id)))return alert('삭제하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');safety('신고 기록을 삭제했어요.')}
-function block(id){if(authBlocked())return;let b=gk('blocked',[]);if(b.includes(id))b=b.filter(x=>x!==id);else{if(!confirm(find(id).name+'님을 차단할까요? 검색에서 숨겨지고 채팅이 막혀요.'))return;b.push(id)}if(!sk('blocked',b))return alert('차단 설정을 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();safety()}
+function block(id){if(authBlocked())return;if(!find(id))return;let b=gk('blocked',[]);if(b.includes(id))b=b.filter(x=>x!==id);else{if(!confirm(find(id).name+'님을 차단할까요? 검색에서 숨겨지고 채팅이 막혀요.'))return;b.push(id)}if(!sk('blocked',b))return alert('차단 설정을 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');render();safety()}
 async function safety(msg){
   await authReady;
   const b=gk('blocked',[]),rp=gk('reports',[]).slice().reverse(),nm=id=>esc((find(id)||{}).name||id);
@@ -155,7 +168,7 @@ async function safety(msg){
 }
 
 /* ===== 이벤트 연결 ===== */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),delrep:()=>delReport(id),safety,tips,ice:()=>ice(b.dataset.i),logout:async()=>{const {error}=await signOutCurrentUser();if(error){alert('로그아웃에 실패했어요. 잠시 후 다시 시도해 주세요.');return}location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),delrep:()=>delReport(id),safety,tips,remembers:retryMembers,ice:()=>ice(b.dataset.i),logout:async()=>{const {error}=await signOutCurrentUser();if(error){alert('로그아웃에 실패했어요. 잠시 후 다시 시도해 주세요.');return}location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
 document.addEventListener('submit',e=>{e.preventDefault();({pf:saveProfile,cf:sendMsg,rf:sendReview,xf:sendReport}[e.target.id]||(()=>{}))()});
 PEOPLE.map(p=>p.city).filter((v,i,a)=>a.indexOf(v)===i).sort().forEach(c=>{const o=document.createElement('option');o.value=o.textContent=c;$('#city').appendChild(o)});
 // 홈 검색에서 넘어온 ?q= 검색어를 첫 화면에 반영해요.
@@ -167,3 +180,8 @@ authReady.then(()=>{ready=true;showMe();render()});
 loadProfile().then(showMe);
 // 로그인 상태일 때만 실제 가입자를 가져와요. 비로그인이면 loadMembers가 아무 요청도 보내지 않아요.
 loadMembers().then(()=>{if(ready)renderMembers()});
+
+
+// 다른 탭에서 로그인·로그아웃하면 열린 모달을 닫고 새 신분 기준으로 다시 그려요.
+// 계정별 데이터(채팅·신고 기록)가 이전 계정 화면에 남지 않게 하기 위해서예요.
+window.rululalaAuthChanged=()=>{closeModal();MEMBERS=null;membersFailed=false;showMe();render();loadProfile().then(showMe);loadMembers().then(()=>{if(ready)renderMembers()})};
