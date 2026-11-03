@@ -212,3 +212,33 @@ async function saveProfile(fields) {
     return { error };
   }
 }
+
+
+// ===== 로그인 상태 변경 반영 (#61) =====
+// 다른 탭에서 로그인·로그아웃하면 열린 페이지의 메뉴와 화면을 새 신분 기준으로 갱신해요.
+// 이 탭에서 직접 한 로그인/로그아웃은 곧 페이지 이동으로 마무리돼요.
+let authIdentity;
+function applyAuthIdentity(session) {
+  const u = session && session.user;
+  const next = u ? u.id : null;
+  if (authIdentity === undefined) { authIdentity = next; return false; }
+  if (next === authIdentity) return false;
+  authIdentity = next;
+  profilePromise = null;
+  if (u) {
+    const nick = ((u.user_metadata && u.user_metadata.nickname) || "").trim();
+    ME = { id: u.id, email: u.email, name: nick || "여행자", city: "", bio: "" };
+    paintAuthState("in");
+  } else {
+    ME = null;
+    paintAuthState("out");
+  }
+  return true;
+}
+authReady.then((session) => {
+  if (authIdentity === undefined) authIdentity = session && session.user ? session.user.id : null;
+});
+db.auth.onAuthStateChange((event, session) => {
+  if (!applyAuthIdentity(session)) return;
+  if (typeof window.rululalaAuthChanged === "function") window.rululalaAuthChanged();
+});
