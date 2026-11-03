@@ -13,6 +13,7 @@ function element() {
     async fire(k) { return this.listeners[k]?.({ preventDefault() {} }); } };
 }
 const user = { id: 'self', email: 'test@example.invalid', user_metadata: { nickname: 'nick' } };
+const otherUser = { id: 'other', email: 'o@example.invalid', user_metadata: { nickname: '다른' } };
 function setup(options = {}, file) {
   const els = new Map();
   const el = id => { if (!els.has(id)) els.set(id, element()); return els.get(id); };
@@ -24,7 +25,7 @@ function setup(options = {}, file) {
   let written;
   const db = {
     auth: {
-      onAuthStateChange: () => ({}),
+      onAuthStateChange: cb => { db._authCb = cb; return {}; },
       getSession: async () => { if (options.sessionThrow) throw Error('offline'); return { data: { session: options.guest ? null : { user } }, error: options.sessionError ? Error('session') : null }; },
       signOut: async () => { if (options.logoutThrow) throw Error('offline'); return { error: options.logoutError ? Error('logout') : null }; },
       signInWithPassword: async () => { calls.auth++; if (options.authWait) await options.authWait; if (options.authThrow) throw Error('offline'); return { error: options.authError ? Error('Invalid login credentials') : null }; },
@@ -33,9 +34,11 @@ function setup(options = {}, file) {
     from: () => {
       let update = false;
       const query = {
-        select() { return query; }, eq() { return query; },
+        select() { return query; }, eq(col, val) { if (update) calls.eqId = val; return query; },
         update(fields) { update = true; written = fields; calls.updates++; return query; },
         async maybeSingle() {
+          if (!update && options.readWait) await options.readWait;
+          if (update && options.saveWait) await options.saveWait;
           if (update ? options.saveThrow : options.readThrow) throw Error('offline');
           return update ? { data: options.zeroRows ? null : { id: options.wrongId ? 'other' : 'self', ...written }, error: options.saveError ? Error('save') : null }
             : { data: options.noProfile ? null : initial, error: options.readError ? Error('read') : null };
@@ -47,13 +50,14 @@ function setup(options = {}, file) {
     window: { supabase: { createClient: () => db } },
     document: { body: { insertAdjacentHTML() {} }, documentElement: { classList: { toggle() {} } },
       querySelectorAll: () => [], getElementById: el, querySelector: s => el(s.slice(1)) },
-    location: { pathname: '/' + (file === 'mypage.js' ? 'mypage.html' : 'login.html'), href: '', search: '' },
+    location: { pathname: '/' + (file === 'mypage.js' ? 'mypage.html' : 'login.html'), href: '', search: '',
+      reload() { this.reloaded = (this.reloaded || 0) + 1; } },
     URLSearchParams, console, Error,
   });
   const run = code => vm.runInContext(code, context);
   run(source('common.js'));
   if (file) run(source(file));
-  return { el, calls, context, run, async settle() { await new Promise(resolve => setImmediate(resolve)); } };
+  return { el, calls, context, run, db, async settle() { await new Promise(resolve => setImmediate(resolve)); } };
 }
 for (const key of ['sessionError', 'sessionThrow']) test(key + ' is not a logged-out success', async () => {
   const s = setup({ [key]: true }); await s.settle(); assert.equal(s.run('authFailed'), true); assert.equal(s.run('authState'), 'error');
@@ -108,3 +112,32 @@ test('blank signup nickname and email-confirmation path restore buttons', async 
   s.el('a-nick').value = 'nick'; await s.el('auth-form').fire('submit'); assert.match(s.el('auth-status').textContent, /인증 링크/); assert.equal(s.context.location.href, '');
 });
 
+
+for (const evt of ['SIGNED_OUT', 'SIGNED_IN']) test('mypage reloads on cross-tab ' + evt + ' instead of keeping the old account form', async () => {
+  const s = setup({}, 'mypage.js'); await s.settle();
+  assert.equal(s.context.location.reloaded || 0, 0);
+  s.db._authCb(evt, evt === 'SIGNED_IN' ? { user: otherUser } : null);
+  await s.settle();
+  assert.equal(s.context.location.reloaded, 1);
+});
+test('in-flight profile load is not applied after a cross-tab account switch', async () => {
+  let release; const gate = new Promise(r => { release = r; });
+  const s = setup({ readWait: gate }); await s.settle();
+  const p = s.run('loadProfile()');
+  await s.settle(); await s.settle();
+  s.db._authCb('SIGNED_IN', { user: otherUser }); await s.settle();
+  release();
+  assert.ok((await p).error);
+  assert.equal(s.run('ME.id'), 'other'); assert.equal(s.run('ME.name'), '다른');
+});
+test('in-flight profile save is not applied after a cross-tab account switch', async () => {
+  let release; const gate = new Promise(r => { release = r; });
+  const s = setup({ saveWait: gate }); await s.settle();
+  const p = s.run('saveProfile({nickname:"new"})');
+  await s.settle(); await s.settle(); await s.settle();
+  s.db._authCb('SIGNED_IN', { user: otherUser }); await s.settle();
+  release();
+  assert.ok((await p).error);
+  assert.equal(s.calls.updates, 1); assert.equal(s.calls.eqId, 'self');
+  assert.equal(s.run('ME.id'), 'other'); assert.equal(s.run('ME.name'), '다른');
+});
