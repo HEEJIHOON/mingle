@@ -155,7 +155,7 @@ async function safety(msg){
 }
 
 /* ===== 이벤트 연결 ===== */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),delrep:()=>delReport(id),safety,tips,ice:()=>ice(b.dataset.i),logout:async()=>{await db.auth.signOut();location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;({x:closeModal,trust:()=>trust(id),fav:()=>fav(id),chat:()=>chat(id),rev:()=>reviews(id),rep:()=>report(id),blk:()=>block(id),delrep:()=>delReport(id),safety,tips,ice:()=>ice(b.dataset.i),logout:async()=>{const {error}=await signOutCurrentUser();if(error){alert('로그아웃에 실패했어요. 잠시 후 다시 시도해 주세요.');return}location.href='index.html'}}[b.dataset.act]||(()=>{}))()});
 document.addEventListener('submit',e=>{e.preventDefault();({pf:saveProfile,cf:sendMsg,rf:sendReview,xf:sendReport}[e.target.id]||(()=>{}))()});
 PEOPLE.map(p=>p.city).filter((v,i,a)=>a.indexOf(v)===i).sort().forEach(c=>{const o=document.createElement('option');o.value=o.textContent=c;$('#city').appendChild(o)});
 // 홈 검색에서 넘어온 ?q= 검색어를 첫 화면에 반영해요.

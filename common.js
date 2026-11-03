@@ -118,10 +118,12 @@ if (footAuthEl) {
       return;
     }
     // 로그인 상태: 푸터에서 바로 로그아웃해요
+    if (footAuthEl.getAttribute("aria-busy") === "true") return;
     footAuthEl.textContent = "로그아웃 중…";
     footAuthEl.setAttribute("aria-busy", "true");
     try {
-      await db.auth.signOut();
+      const { error } = await signOutCurrentUser();
+      if (error) throw error;
       location.href = "index.html";
     } catch (err) {
       footAuthEl.removeAttribute("aria-busy");
@@ -135,6 +137,7 @@ const authReady = (async () => {
   let session = null;
   try {
     const res = await db.auth.getSession();
+    if (res.error) throw res.error;
     session = res.data && res.data.session;
   } catch (e) {
     authFailed = true;
@@ -153,33 +156,59 @@ const authReady = (async () => {
   return session;
 })();
 
-// profiles 상세 조회는 친구 찾기처럼 필요한 화면에서만 호출해요.
+// SDK가 반환하는 error와 예외를 모든 로그아웃 경로에서 같은 방식으로 처리해요.
+async function signOutCurrentUser() {
+  try {
+    const { error } = await db.auth.signOut();
+    return { error: error || null };
+  } catch (error) {
+    return { error };
+  }
+}
+
+// 읽기 실패를 빈 프로필과 구분해요. 실패한 요청은 다음 호출에서 다시 시도할 수 있어요.
 let profilePromise = null;
 function loadProfile() {
   if (!profilePromise) {
-    profilePromise = authReady.then(async () => {
-      if (!ME) return;
+    profilePromise = (async () => {
+      await authReady;
+      if (!ME) return { error: new Error("not-signed-in") };
       try {
-        const { data } = await db.from("profiles").select("nickname, city, bio").eq("id", ME.id).maybeSingle();
-        if (data) {
-          const nick = (data.nickname || "").trim();
-          ME = { ...ME, name: nick || ME.name, city: data.city || "", bio: data.bio || "" };
-        }
-      } catch (e) { /* 프로필 조회 실패 시 세션 정보로 계속해요 */ }
+        const { data, error } = await db.from("profiles").select("nickname, city, bio").eq("id", ME.id).maybeSingle();
+        if (error) return { error };
+        if (!data) return { error: new Error("profile-not-found") };
+        const nick = (data.nickname || "").trim();
+        ME = { ...ME, name: nick || ME.name, city: data.city || "", bio: data.bio || "" };
+        return { error: null };
+      } catch (error) {
+        return { error };
+      }
+    })().then((result) => {
+      if (result.error) profilePromise = null;
+      return result;
     });
   }
   return profilePromise;
 }
 
-// 프로필 저장은 어느 화면에서나 이 함수를 써요. 행은 가입 트리거가 만들고, RLS상 본인 행만 갱신할 수 있어요.
+// 읽어 온 본인 행만 갱신하고, 반환된 행을 확인한 뒤 화면에 반영해요.
 async function saveProfile(fields) {
   await authReady;
   if (!ME) return { error: new Error("not-signed-in") };
+  const loaded = await loadProfile();
+  if (loaded.error) return loaded;
   const nickname = (fields.nickname || "").trim();
   const city = (fields.city || "").trim();
   const bio = (fields.bio || "").trim();
   if (!nickname) return { error: new Error("nickname-required") };
-  const { error } = await db.from("profiles").update({ nickname, city, bio }).eq("id", ME.id);
-  if (!error) ME = { ...ME, name: nickname, city, bio };
-  return { error };
+  try {
+    const { data, error } = await db.from("profiles").update({ nickname, city, bio })
+      .eq("id", ME.id).select("id, nickname, city, bio").maybeSingle();
+    if (error) return { error };
+    if (!data || data.id !== ME.id) return { error: new Error("profile-not-updated") };
+    ME = { ...ME, name: data.nickname, city: data.city || "", bio: data.bio || "" };
+    return { error: null };
+  } catch (error) {
+    return { error };
   }
+}
