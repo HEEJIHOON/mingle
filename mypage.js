@@ -1,5 +1,9 @@
 const $ = (s) => document.querySelector(s);
 
+// 다른 탭에서 로그인·로그아웃하면 열린 프로필 화면을 새 신분 기준으로 다시 불러와요. (#61)
+// 폼에 이전 계정의 값이 남은 채 저장되는 걸 막기 위해서예요.
+window.rululalaAuthChanged = () => { location.reload(); };
+
 function setStatus(text, kind) {
   const el = $('#p-status');
   el.textContent = text;
