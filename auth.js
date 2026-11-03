@@ -16,7 +16,7 @@ function setMode(next) {
   const signup = mode === "signup";
   title.textContent = signup ? "회원가입" : "로그인";
   submitBtn.textContent = signup ? "가입하기" : "로그인";
-  nick.hidden = !signup;
+  document.getElementById("a-nick-field").hidden = !signup;
   nick.required = signup;
   pw.autocomplete = signup ? "new-password" : "current-password";
   switchText.textContent = signup ? "이미 계정이 있나요?" : "계정이 없나요?";
@@ -39,6 +39,10 @@ switchBtn.addEventListener("click", () => setMode(mode === "login" ? "signup" : 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (submitBtn.disabled) return;
+  if (!db) {
+    statusEl.textContent = "로그인 기능을 불러오지 못했어요. 새로고침한 뒤 다시 시도해 주세요.";
+    return;
+  }
   const requestMode = mode;
   const originalText = submitBtn.textContent;
   submitBtn.disabled = true;

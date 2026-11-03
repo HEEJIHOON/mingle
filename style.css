@@ -148,7 +148,7 @@ a.band-head:hover h2{text-decoration:underline;text-underline-offset:4px}
 
 /* ===== 일반 섹션 (서브 페이지) ===== */
 section{padding:56px 0}
-section>h2,.w>h2{margin-bottom:28px;font-size:32px;font-weight:700;line-height:1.35;letter-spacing:-.05em}
+section>h1,.w>h1{margin-bottom:28px;font-size:32px;font-weight:700;line-height:1.35;letter-spacing:-.05em}
 
 /* ===== 카드 공통 ===== */
 /* Elevated cards: white on the mist canvas, separated by the dual-layer soft shadow alone */
@@ -206,8 +206,8 @@ section>h2,.w>h2{margin-bottom:28px;font-size:32px;font-weight:700;line-height:1
 .safe li::before{content:"✓";display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font-size:15px;font-weight:600}
 .safe.soon li{color:var(--mute);font-weight:500;box-shadow:var(--shadow-sm)}
 .safe.soon li::before{content:"예정";flex-basis:48px;border-radius:9999px;background:var(--grad-soft);color:var(--mute);font-size:12px}
-#safe h3{margin:28px 0 14px;font-size:17px}
-#safe h2+h3{margin-top:8px}
+#safe h2{margin:28px 0 14px;font-size:17px}
+#safe h1+h2{margin-top:8px}
 
 /* ===== 푸터 (Shop dark columnar footer) ===== */
 footer{margin-top:auto;background:var(--deep);color:#9c9693}
@@ -280,8 +280,10 @@ body.modal-open{overflow:hidden}
 .btn-line{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
 .btn-line:hover{background:var(--grad-soft);color:var(--ink);transform:none;box-shadow:none}
 .auth{max-width:480px;margin:0 auto}
-.auth h2{margin-bottom:32px}
+.auth h1{margin-bottom:32px}
 #auth-form{display:grid;gap:14px}
+#auth-form .field{display:grid;gap:8px}
+#auth-form label{font-size:13px;font-weight:600;color:var(--ink)}
 #auth-form input{padding:14px 20px;font-size:15px}
 #auth-form .btn{width:100%;margin-top:4px;padding:15px}
 #auth-status{min-height:1.4em;margin:12px 0 0;color:var(--mute);font-size:14px;line-height:1.6;text-align:center}
@@ -326,7 +328,7 @@ body.modal-open{overflow:hidden}
   .band{padding:28px 0}
   .band-head{margin-bottom:18px}
   section{padding:44px 0}
-  section>h2,.w>h2{margin-bottom:22px;font-size:26px}
+  section>h1,.w>h1{margin-bottom:22px;font-size:26px}
   .steps li{padding:24px 18px}
   .steps li{font-size:14px}
   .tab,.stab{padding:9px 15px;font-size:13px}
