@@ -14,7 +14,27 @@ function setStatus(text, kind) {
   }
   if (!ME) { location.href = 'login.html'; return; }
 
-  await loadProfile();
+  $('#p-logout').addEventListener('click', async () => {
+    const btn = $('#p-logout');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try {
+      const { error } = await signOutCurrentUser();
+      if (error) throw error;
+      location.href = 'index.html';
+    } catch (e) {
+      setStatus('로그아웃에 실패했어요. 잠시 후 다시 시도해 주세요.', 'err');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  const loaded = await loadProfile();
+  if (loaded.error) {
+    $('#p-submit').textContent = '불러오기 실패';
+    setStatus('프로필을 불러오지 못했어요. 기존 정보를 보호하기 위해 저장을 막았어요. 새로고침한 뒤 다시 시도해 주세요.', 'err');
+    return;
+  }
   $('#p-nick').value = ME.name || '';
   $('#p-city').value = ME.city || '';
   $('#p-bio').value = ME.bio || '';
@@ -28,34 +48,25 @@ function setStatus(text, kind) {
   $('#profile-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = $('#p-submit');
+    if (btn.disabled) return;
     btn.disabled = true;
     btn.textContent = '저장 중…';
     setStatus('', '');
-    const { error } = await saveProfile({
-      nickname: $('#p-nick').value,
-      city: $('#p-city').value,
-      bio: $('#p-bio').value,
-    });
-    btn.disabled = false;
-    btn.textContent = '저장';
-    if (error) {
-      setStatus(error.message === 'nickname-required'
+    try {
+      const { error } = await saveProfile({
+        nickname: $('#p-nick').value,
+        city: $('#p-city').value,
+        bio: $('#p-bio').value,
+      });
+      if (error) throw error;
+      setStatus('저장했어요.', 'ok');
+    } catch (error) {
+      setStatus(error && error.message === 'nickname-required'
         ? '닉네임을 입력해 주세요. 공백만으로는 저장할 수 없어요.'
         : '저장에 실패했어요. 잠시 후 다시 시도해 주세요.', 'err');
-      return;
-    }
-    setStatus('저장했어요.', 'ok');
-  });
-
-  $('#p-logout').addEventListener('click', async () => {
-    const btn = $('#p-logout');
-    btn.disabled = true;
-    try {
-      await db.auth.signOut();
-      location.href = 'index.html';
-    } catch (e) {
+    } finally {
       btn.disabled = false;
-      setStatus('로그아웃에 실패했어요. 잠시 후 다시 시도해 주세요.', 'err');
+      btn.textContent = '저장';
     }
   });
 })();
