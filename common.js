@@ -173,10 +173,13 @@ function loadProfile() {
     profilePromise = (async () => {
       await authReady;
       if (!ME) return { error: new Error("not-signed-in") };
+      const uid = ME.id;
       try {
-        const { data, error } = await db.from("profiles").select("nickname, city, bio").eq("id", ME.id).maybeSingle();
+        const { data, error } = await db.from("profiles").select("nickname, city, bio").eq("id", uid).maybeSingle();
         if (error) return { error };
         if (!data) return { error: new Error("profile-not-found") };
+        // 응답이 오는 동안 다른 탭에서 계정이 바뀌었으면 이전 계정의 값을 새 신분에 적용하지 않아요.
+        if (!ME || ME.id !== uid) return { error: new Error("identity-changed") };
         const nick = (data.nickname || "").trim();
         ME = { ...ME, name: nick || ME.name, city: data.city || "", bio: data.bio || "" };
         return { error: null };
@@ -197,15 +200,19 @@ async function saveProfile(fields) {
   if (!ME) return { error: new Error("not-signed-in") };
   const loaded = await loadProfile();
   if (loaded.error) return loaded;
+  if (!ME) return { error: new Error("not-signed-in") };
+  const uid = ME.id;
   const nickname = (fields.nickname || "").trim();
   const city = (fields.city || "").trim();
   const bio = (fields.bio || "").trim();
   if (!nickname) return { error: new Error("nickname-required") };
   try {
     const { data, error } = await db.from("profiles").update({ nickname, city, bio })
-      .eq("id", ME.id).select("id, nickname, city, bio").maybeSingle();
+      .eq("id", uid).select("id, nickname, city, bio").maybeSingle();
     if (error) return { error };
-    if (!data || data.id !== ME.id) return { error: new Error("profile-not-updated") };
+    if (!data || data.id !== uid) return { error: new Error("profile-not-updated") };
+    // 저장이 끝나기 전에 계정이 바뀌었으면 결과를 새 신분에 반영하지 않아요.
+    if (!ME || ME.id !== uid) return { error: new Error("identity-changed") };
     ME = { ...ME, name: data.nickname, city: data.city || "", bio: data.bio || "" };
     return { error: null };
   } catch (error) {
