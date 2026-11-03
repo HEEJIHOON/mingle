@@ -24,6 +24,7 @@ function setup(options = {}, file) {
   let written;
   const db = {
     auth: {
+      onAuthStateChange: () => ({}),
       getSession: async () => { if (options.sessionThrow) throw Error('offline'); return { data: { session: options.guest ? null : { user } }, error: options.sessionError ? Error('session') : null }; },
       signOut: async () => { if (options.logoutThrow) throw Error('offline'); return { error: options.logoutError ? Error('logout') : null }; },
       signInWithPassword: async () => { calls.auth++; if (options.authWait) await options.authWait; if (options.authThrow) throw Error('offline'); return { error: options.authError ? Error('Invalid login credentials') : null }; },
@@ -106,3 +107,4 @@ test('blank signup nickname and email-confirmation path restore buttons', async 
   await s.el('auth-form').fire('submit'); assert.equal(s.calls.auth, 0); assert.equal(s.el('a-submit').disabled, false);
   s.el('a-nick').value = 'nick'; await s.el('auth-form').fire('submit'); assert.match(s.el('auth-status').textContent, /인증 링크/); assert.equal(s.context.location.href, '');
 });
+
