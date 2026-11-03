@@ -1,7 +1,15 @@
-const db = window.supabase.createClient(
-  "https://knnjrjtdmbgubhoylrob.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtubmpyanRkbWJndWJob3lscm9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MjMxODAsImV4cCI6MjEwODQ5OTE4MH0.LtZDpLgjdpgavF5CeLbUygzPJJ5XrI-JavkQ_EWGZMk"
-);
+// 인증 SDK(CDN)가 로딩되지 않아도 메뉴·푸터는 그려요. 로그인 관련 기능만 오류 상태로 안내해요. (이슈 #62)
+let db = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
+    db = window.supabase.createClient(
+      "https://knnjrjtdmbgubhoylrob.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtubmpyanRkbWJndWJob3lscm9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MjMxODAsImV4cCI6MjEwODQ5OTE4MH0.LtZDpLgjdpgavF5CeLbUygzPJJ5XrI-JavkQ_EWGZMk"
+    );
+  }
+} catch (e) {
+  db = null;
+}
 
 let ME = null;
 let authFailed = false;
@@ -9,7 +17,7 @@ let authFailed = false;
 // 레일의 사람 버튼은 상태에 따라 내 정보/로그인으로 보내요. 로그아웃은 내 정보 페이지에서만 해요.
 let authState = "pending"; // pending | in | out | error
 
-// 7개 페이지가 공유하는 내비게이션과 푸터는 여기서 넣어요. 메뉴·푸터를 고칠 때 이 파일만 고치면 돼요.
+// 8개 페이지가 공유하는 내비게이션과 푸터는 여기서 넣어요. 메뉴·푸터를 고칠 때 이 파일만 고치면 돼요.
 const currentPage = location.pathname.split("/").pop() || "index.html";
 const railHTML = `<nav class="rail" aria-label="페이지 이동">
   <a class="rail-logo" href="index.html" aria-label="rululala 홈">r</a>
@@ -26,7 +34,7 @@ const footHTML = `<footer><div class="w">
     <div class="fcol"><b>메뉴</b><a href="index.html">홈</a><a href="friends.html">친구 찾기</a><a href="world.html">도시</a><a href="stay.html">숙소</a><a href="safe.html">안전</a></div>
     <div class="fcol"><b>안내</b><a href="safe.html">안전 수칙</a><a href="credits.html">사진 크레딧</a><a href="login.html" id="foot-auth">로그인</a><a href="mypage.html">내 정보</a></div>
   </div>
-  <div class="fnote">rululala은 준비 중이에요. 프로필·도시·숙소와 별점·인증 표시는 예시예요. 후기·메시지·차단·신고는 이 브라우저에만 저장되는 데모예요.</div>
+  <div class="fnote">rululala은 준비 중이에요. 도시·숙소와 예시 친구의 프로필·별점·인증 표시는 예시예요. 후기·메시지·차단·신고는 이 브라우저에만 저장되는 데모예요.</div>
 </div></footer>`;
 const footMypageHTML = `<footer><div class="w">
   <div class="fnote">프로필(닉네임·도시·자기소개)은 가입한 rululala 회원에게만 보여요. 이메일 등 로그인 정보는 공개되지 않아요.</div>
@@ -134,6 +142,11 @@ if (footAuthEl) {
 
 // 세션 판정은 여기서 한 번만 해요. 프로필 상세(city/bio)는 필요한 화면이 loadProfile()로 읽어요.
 const authReady = (async () => {
+  if (!db) {
+    authFailed = true;
+    paintAuthState("error");
+    return null;
+  }
   let session = null;
   try {
     const res = await db.auth.getSession();
@@ -158,6 +171,7 @@ const authReady = (async () => {
 
 // SDK가 반환하는 error와 예외를 모든 로그아웃 경로에서 같은 방식으로 처리해요.
 async function signOutCurrentUser() {
+  if (!db) return { error: new Error("sdk-not-loaded") };
   try {
     const { error } = await db.auth.signOut();
     return { error: error || null };
@@ -245,7 +259,9 @@ function applyAuthIdentity(session) {
 authReady.then((session) => {
   if (authIdentity === undefined) authIdentity = session && session.user ? session.user.id : null;
 });
-db.auth.onAuthStateChange((event, session) => {
-  if (!applyAuthIdentity(session)) return;
-  if (typeof window.rululalaAuthChanged === "function") window.rululalaAuthChanged();
-});
+if (db) {
+  db.auth.onAuthStateChange((event, session) => {
+    if (!applyAuthIdentity(session)) return;
+    if (typeof window.rululalaAuthChanged === "function") window.rululalaAuthChanged();
+  });
+}
