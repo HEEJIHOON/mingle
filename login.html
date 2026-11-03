@@ -10,11 +10,11 @@
 </head>
 <body>
 <section><div class="w auth">
-  <h2 id="auth-title">로그인</h2>
+  <h1 id="auth-title">로그인</h1>
   <form id="auth-form">
-    <input id="a-nick" maxlength="20" placeholder="닉네임" autocomplete="nickname" hidden>
-    <input id="a-email" type="email" required placeholder="이메일" autocomplete="email">
-    <input id="a-pw" type="password" required minlength="6" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
+    <div class="field" id="a-nick-field" hidden><label for="a-nick">닉네임</label><input id="a-nick" maxlength="20" placeholder="닉네임" autocomplete="nickname"></div>
+    <div class="field"><label for="a-email">이메일</label><input id="a-email" type="email" required placeholder="이메일" autocomplete="email"></div>
+    <div class="field"><label for="a-pw">비밀번호</label><input id="a-pw" type="password" required minlength="6" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div>
     <button class="btn" type="submit" id="a-submit">로그인</button>
   </form>
   <p id="auth-status" role="status"></p>
