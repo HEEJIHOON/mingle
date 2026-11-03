@@ -11,6 +11,7 @@ const switchBtn = document.getElementById("switch-btn");
 let mode = "login";
 
 function setMode(next) {
+  if (submitBtn.disabled) return;
   mode = next;
   const signup = mode === "signup";
   title.textContent = signup ? "회원가입" : "로그인";
@@ -24,7 +25,7 @@ function setMode(next) {
 }
 
 function friendlyError(error) {
-  const msg = error.message || "";
+  const msg = (error && error.message) || "";
   if (msg.includes("Invalid login credentials")) return "이메일 또는 비밀번호가 맞지 않아요.";
   if (msg.includes("already registered")) return "이미 가입된 이메일이에요.";
   if (msg.includes("at least 6")) return "비밀번호는 6자 이상이어야 해요.";
@@ -37,35 +38,44 @@ switchBtn.addEventListener("click", () => setMode(mode === "login" ? "signup" : 
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (submitBtn.disabled) return;
+  const requestMode = mode;
+  const originalText = submitBtn.textContent;
   submitBtn.disabled = true;
+  switchBtn.disabled = true;
+  submitBtn.textContent = requestMode === "signup" ? "가입 중…" : "로그인 중…";
   statusEl.textContent = "";
 
-  if (mode === "signup") {
-    const nickname = nick.value.trim();
-    if (!nickname) {
-      statusEl.textContent = "닉네임을 입력해 주세요. 공백만으로는 만들 수 없어요.";
-      submitBtn.disabled = false;
-      nick.focus();
-      return;
+  try {
+    if (requestMode === "signup") {
+      const nickname = nick.value.trim();
+      if (!nickname) {
+        statusEl.textContent = "닉네임을 입력해 주세요. 공백만으로는 만들 수 없어요.";
+        nick.focus();
+        return;
+      }
+      const { data, error } = await db.auth.signUp({
+        email: email.value.trim(),
+        password: pw.value,
+        options: { data: { nickname } },
+      });
+      if (error) { statusEl.textContent = friendlyError(error); return; }
+      if (!data.session) { statusEl.textContent = "가입 완료! 이메일로 보낸 인증 링크를 눌러주세요."; return; }
+      location.href = "mypage.html?welcome=1";
+    } else {
+      const { error } = await db.auth.signInWithPassword({
+        email: email.value.trim(),
+        password: pw.value,
+      });
+      if (error) { statusEl.textContent = friendlyError(error); return; }
+      location.href = "index.html";
     }
-    const { data, error } = await db.auth.signUp({
-      email: email.value.trim(),
-      password: pw.value,
-      options: { data: { nickname } },
-    });
+  } catch (error) {
+    statusEl.textContent = friendlyError(error);
+  } finally {
     submitBtn.disabled = false;
-    if (error) { statusEl.textContent = friendlyError(error); return; }
-    if (!data.session) { statusEl.textContent = "가입 완료! 이메일로 보낸 인증 링크를 눌러주세요."; return; }
-    // 프로필 행은 DB 트리거가 만들어요. 가입 직후엔 내 페이지에서 이어서 프로필을 채워요.
-    location.href = "mypage.html?welcome=1";
-  } else {
-    const { error } = await db.auth.signInWithPassword({
-      email: email.value.trim(),
-      password: pw.value,
-    });
-    submitBtn.disabled = false;
-    if (error) { statusEl.textContent = friendlyError(error); return; }
-    location.href = "index.html";
+    switchBtn.disabled = false;
+    submitBtn.textContent = originalText;
   }
 });
 
