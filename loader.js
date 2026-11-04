@@ -30,14 +30,24 @@ function rululalaShowLoadError() {
 // 새 버전 주소의 CSS·JS를 내려받는 동안 스타일 없는 화면이 잠깐 보였다가 사라지는
 // 새로고침 깜빡임이 있었어요. 첫 화면은 필요한 자산이 준비된 뒤에 그리고, 어떤 자산이
 // 멈춰도 4초 뒤에는 화면을 보여줘요.
+// 스타일시트가 적용되기 전 브라우저 기본 스타일에서 테마 스타일로 바뀔 때 .2s 전환이
+// 동작해서 새로고침할 때 검정 테두리·흰 버튼이 잠깐 보여요. 첫 화면이 그려지기 전까지는
+// 전환을 꺼 두는 표시 클래스를 붙여요.
+document.documentElement.classList.add("rululala-preload");
 var rululalaAllQueued = false;
 var rululalaRevealed = false;
 var rululalaPendingAssets = 0;
 if (document.documentElement.style) document.documentElement.style.visibility = "hidden";
+function rululalaClearPreload() {
+  document.documentElement.classList.remove("rululala-preload");
+}
 function rululalaReveal() {
   if (rululalaRevealed) return;
   rululalaRevealed = true;
   if (document.documentElement.style) document.documentElement.style.visibility = "";
+  // 첫 화면이 그려진 뒤에 전환을 다시 켜요.
+  if (window.requestAnimationFrame) window.requestAnimationFrame(function () { window.requestAnimationFrame(rululalaClearPreload); });
+  else rululalaClearPreload();
 }
 function rululalaMaybeReveal() {
   if (rululalaAllQueued && rululalaPendingAssets <= 0) rululalaReveal();
