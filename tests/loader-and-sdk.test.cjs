@@ -29,7 +29,7 @@ function makeDocument() {
     readyState: 'complete',
     currentScript: null,
     head, body,
-    documentElement: { style: {}, classList: { added: [], add(c) { this.added.push(c); }, toggle() {} } },
+    documentElement: { style: {}, classList: { added: [], removed: [], add(c) { this.added.push(c); }, remove(c) { this.removed.push(c); }, toggle() {} } },
     createElement: t => node(t),
     getElementById: id => registry.find(n => n.id === id) || null,
     querySelectorAll: () => [],
@@ -49,6 +49,7 @@ function runLoader(now) {
     Date: { now: () => now },
     Math,
     setTimeout: () => 0,
+    window: { requestAnimationFrame: fn => { fn(); return 0; } },
   };
   vm.createContext(sandbox);
   vm.runInContext(source('loader.js'), sandbox);
@@ -179,4 +180,20 @@ test('refresh-flash: failed assets still reveal the page and show the notice', (
   scripts.forEach(s => s.onerror());
   assert.equal(document.documentElement.style.visibility, '');
   assert.ok(document.getElementById('rululala-load-error'), 'notice element exists');
+});
+
+test('refresh-flash: preload class kills transitions before first paint, restored after reveal', () => {
+  const { document } = runLoader(1000);
+  assert.ok(document.documentElement.classList.added.includes('rululala-preload'));
+  const link = document.head.children[0];
+  const scripts = document.body.children.filter(c => c.tagName === 'script');
+  link.onload();
+  scripts.forEach(s => s.onload());
+  assert.equal(document.documentElement.style.visibility, '');
+  assert.ok(document.documentElement.classList.removed.includes('rululala-preload'));
+});
+
+test('refresh-flash: stylesheet disables transitions under the preload class', () => {
+  const css = source('style.css');
+  assert.match(css, /html\.rululala-preload \*\{transition:none!important\}|html\.rululala-preload[^{]*\{transition:none!important\}/);
 });
