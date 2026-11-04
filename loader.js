@@ -27,10 +27,33 @@ function rululalaShowLoadError() {
   else document.addEventListener("DOMContentLoaded", show);
 }
 
+// 새 버전 주소의 CSS·JS를 내려받는 동안 스타일 없는 화면이 잠깐 보였다가 사라지는
+// 새로고침 깜빡임이 있었어요. 첫 화면은 필요한 자산이 준비된 뒤에 그리고, 어떤 자산이
+// 멈춰도 4초 뒤에는 화면을 보여줘요.
+var rululalaAllQueued = false;
+var rululalaRevealed = false;
+var rululalaPendingAssets = 0;
+if (document.documentElement.style) document.documentElement.style.visibility = "hidden";
+function rululalaReveal() {
+  if (rululalaRevealed) return;
+  rululalaRevealed = true;
+  if (document.documentElement.style) document.documentElement.style.visibility = "";
+}
+function rululalaMaybeReveal() {
+  if (rululalaAllQueued && rululalaPendingAssets <= 0) rululalaReveal();
+}
+function rululalaAssetDone() {
+  rululalaPendingAssets -= 1;
+  rululalaMaybeReveal();
+}
+setTimeout(rululalaReveal, 4000);
+
 var rululalaStyles = document.createElement("link");
 rululalaStyles.rel = "stylesheet";
 rululalaStyles.href = "style.css?v=" + rululalaAssetVersion;
-rululalaStyles.onerror = rululalaShowLoadError;
+rululalaPendingAssets += 1;
+rululalaStyles.onload = rululalaAssetDone;
+rululalaStyles.onerror = function () { rululalaShowLoadError(); rululalaAssetDone(); };
 document.head.appendChild(rululalaStyles);
 
 // 로그인한 화면은 첫 그리기부터 메뉴가 맞도록 html에 in 클래스를 미리 붙여요.
@@ -46,10 +69,14 @@ try{if(localStorage.getItem('sb-knnjrjtdmbgubhoylrob-auth-token'))document.docum
     list.forEach(function (src) {
       var script = document.createElement('script');
       script.async = false;
-      script.onerror = rululalaShowLoadError;
+      rululalaPendingAssets += 1;
+      script.onload = rululalaAssetDone;
+      script.onerror = function () { rululalaShowLoadError(); rululalaAssetDone(); };
       script.src = src.indexOf('http') === 0 ? src : src + '?v=' + rululalaAssetVersion;
       document.body.appendChild(script);
     });
+    rululalaAllQueued = true;
+    rululalaMaybeReveal();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', appendScripts);
   else appendScripts();
