@@ -29,7 +29,7 @@ function makeDocument() {
     readyState: 'complete',
     currentScript: null,
     head, body,
-    documentElement: { classList: { added: [], add(c) { this.added.push(c); }, toggle() {} } },
+    documentElement: { style: {}, classList: { added: [], add(c) { this.added.push(c); }, toggle() {} } },
     createElement: t => node(t),
     getElementById: id => registry.find(n => n.id === id) || null,
     querySelectorAll: () => [],
@@ -48,6 +48,7 @@ function runLoader(now) {
     location: { reload() { sandbox.reloaded = true; } },
     Date: { now: () => now },
     Math,
+    setTimeout: () => 0,
   };
   vm.createContext(sandbox);
   vm.runInContext(source('loader.js'), sandbox);
@@ -153,4 +154,29 @@ test('#62 common.js still signs out state normally when the SDK is present', asy
   assert.equal(await run('authReady'), null);
   assert.equal(run('authFailed'), false);
   assert.equal(el('foot-auth').textContent, '로그인');
+});
+
+test('refresh-flash: page stays hidden until stylesheet and scripts are all ready', () => {
+  const { document } = runLoader(1000);
+  assert.equal(document.documentElement.style.visibility, 'hidden');
+  const link = document.head.children[0];
+  assert.equal(typeof link.onload, 'function');
+  const scripts = document.body.children.filter(c => c.tagName === 'script');
+  assert.ok(scripts.every(s => typeof s.onload === 'function'), 'every script has onload');
+  link.onload(); // stylesheet ready, scripts still pending
+  assert.equal(document.documentElement.style.visibility, 'hidden');
+  scripts.slice(0, -1).forEach(s => s.onload());
+  assert.equal(document.documentElement.style.visibility, 'hidden');
+  scripts[scripts.length - 1].onload();
+  assert.equal(document.documentElement.style.visibility, '');
+});
+
+test('refresh-flash: failed assets still reveal the page and show the notice', () => {
+  const { document } = runLoader(1000);
+  const link = document.head.children[0];
+  const scripts = document.body.children.filter(c => c.tagName === 'script');
+  link.onerror();
+  scripts.forEach(s => s.onerror());
+  assert.equal(document.documentElement.style.visibility, '');
+  assert.ok(document.getElementById('rululala-load-error'), 'notice element exists');
 });
